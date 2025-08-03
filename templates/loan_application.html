@@ -1,0 +1,706 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      @import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+      @import url("https://fonts.googleapis.com/css?family=IBM+Plex+Sans+Devanagari:400,700,600");
+
+      * {
+        -webkit-font-smoothing: antialiased;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0px;
+        height: 100%;
+      }
+
+      button:focus-visible {
+        outline: 2px solid #4a90e2 !important;
+        outline: -webkit-focus-ring-color auto 5px !important;
+      }
+
+      a {
+        text-decoration: none;
+      }
+
+      :root {
+        --neutralswhite: rgba(255, 255, 255, 1);
+        --neutrals-400: rgba(203, 210, 224, 1);
+      }
+
+      .transactions {
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        width: 100%;
+        padding-left: 20px;
+      }
+
+      .transactions .div {
+        background-color: #ffffff;
+        width: 100%;
+        max-width: 1200px;
+        height: 780px;
+        position: relative;
+      }
+
+      .transactions .frame {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 118px;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 24px 0px;
+        position: absolute;
+        top: 2px;
+        left: 0;
+        background-color: #f6f8f9;
+        border-bottom-width: 3px;
+        border-bottom-style: solid;
+        border-color: #fc9b9b;
+      }
+
+      .transactions .frame-wrapper {
+        display: flex;
+        width: 100%;
+        max-width: 1151px;
+        align-items: center;
+        position: relative;
+        flex: 0 0 auto;
+      }
+
+      .transactions .frame-2 {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        position: relative;
+        flex: 1;
+        flex-grow: 1;
+      }
+
+      .transactions .text-wrapper {
+        position: relative;
+        align-self: stretch;
+        margin-top: -1.00px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #000000;
+        font-size: 16px;
+        letter-spacing: -0.80px;
+        line-height: 24px;
+      }
+
+      .transactions .text-wrapper-2 {
+        position: relative;
+        align-self: stretch;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 28px;
+        letter-spacing: 0;
+        line-height: 32px;
+      }
+
+      .transactions .new-loan {
+        position: absolute;
+        top: 165px;
+        left: 20px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 700;
+        color: transparent;
+        font-size: 16px;
+        letter-spacing: -0.16px;
+        line-height: 24px;
+        white-space: nowrap;
+      }
+
+      .transactions .span {
+        color: #fa1e1e;
+        letter-spacing: -0.04px;
+      }
+
+      .transactions .text-wrapper-3 {
+        color: #000000;
+        letter-spacing: -0.04px;
+      }
+
+      .transactions .frame-3 {
+        display: flex;
+        flex-direction: column;
+        width: calc(100% - 40px);
+        max-width: 1188px;
+        align-items: flex-start;
+        gap: 24px;
+        padding: 12px 12px 22px;
+        position: absolute;
+        top: 208px;
+        left: 20px;
+        border-radius: 16px;
+        border: 0.5px solid;
+        border-color: #9ca0a4;
+      }
+
+      .transactions .input-field-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        flex: 0 0 auto;
+      }
+
+      .transactions .input-field {
+        align-items: flex-start;
+        justify-content: flex-end;
+        align-self: stretch;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        height: 54px;
+        gap: 8px;
+        position: relative;
+      }
+
+      .transactions .text-input {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 11px 12px;
+        position: relative;
+        flex: 1;
+        align-self: stretch;
+        width: 100%;
+        flex-grow: 1;
+        background-color: var(--neutralswhite);
+        border-radius: 8px;
+        border: 1px solid;
+        border-color: var(--neutrals-400);
+      }
+
+      .transactions .vuesax-linear-user {
+        position: relative;
+        width: 24px;
+        height: 24px;
+      }
+
+      .transactions .value {
+        font-weight: 400;
+        color: #333333;
+        font-size: 14px;
+        letter-spacing: -0.14px;
+        line-height: 20px;
+        position: relative;
+        flex: 1;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+      }
+
+      .transactions .frame-4 {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 24px;
+        padding: 12px 10px 12px 20px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        flex: 0 0 auto;
+      }
+
+      .transactions .div-wrapper {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        position: relative;
+        flex: 0 0 auto;
+      }
+
+      .transactions .text-wrapper-4 {
+        position: relative;
+        width: fit-content;
+        margin-top: -1.00px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 700;
+        color: #000000;
+        font-size: 16px;
+        letter-spacing: -0.16px;
+        line-height: 24px;
+        white-space: nowrap;
+      }
+
+      .transactions .form-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 24px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        flex: 0 0 auto;
+      }
+
+      .transactions .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+      }
+
+      .transactions .form-group.amount {
+        flex: 2;
+      }
+
+      .transactions .form-group.months {
+        flex: 1;
+      }
+
+      .transactions .form-group.frequency {
+        flex: 1.5;
+      }
+
+      .transactions .form-label {
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 14px;
+        letter-spacing: -0.14px;
+        line-height: 20px;
+        margin-bottom: 4px;
+      }
+
+      .transactions .amount-input {
+        display: flex;
+        height: 54px;
+        align-items: center;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #c8ccd3;
+      }
+
+      .transactions .currency-prefix {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 12px;
+        background-color: #e9eff0;
+        height: 100%;
+        border-right: 1px solid #c8ccd3;
+      }
+
+      .transactions .currency-text {
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 14px;
+        letter-spacing: 0;
+        line-height: 18px;
+        white-space: nowrap;
+      }
+
+      .transactions .amount-field {
+        flex: 1;
+        height: 100%;
+        border: none;
+        padding: 11px 12px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #333333;
+        font-size: 14px;
+        letter-spacing: -0.14px;
+        line-height: 20px;
+        background-color: #ffffff;
+      }
+
+      .transactions .amount-field:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px #4a90e2;
+      }
+
+      .transactions .months-input {
+        display: flex;
+        height: 54px;
+        align-items: center;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #c8ccd3;
+      }
+
+      .transactions .months-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 12px;
+        background-color: #e9eff0;
+        height: 100%;
+        border-right: 1px solid #c8ccd3;
+      }
+
+      .transactions .months-field {
+        flex: 1;
+        height: 100%;
+        border: none;
+        padding: 11px 12px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #333333;
+        font-size: 14px;
+        letter-spacing: -0.14px;
+        line-height: 20px;
+        background-color: #ffffff;
+        text-align: center;
+      }
+
+      .transactions .months-field:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px #4a90e2;
+      }
+
+      .transactions .select-wrapper {
+        position: relative;
+        height: 54px;
+      }
+
+      .transactions .frequency-select {
+        width: 100%;
+        height: 100%;
+        padding: 11px 12px;
+        border: 1px solid #c8ccd3;
+        border-radius: 8px;
+        background-color: #ffffff;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #333333;
+        font-size: 14px;
+        letter-spacing: -0.14px;
+        line-height: 20px;
+        appearance: none;
+        cursor: pointer;
+      }
+
+      .transactions .frequency-select:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px #4a90e2;
+      }
+
+      .transactions .select-arrow {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 12px;
+        height: 12px;
+        pointer-events: none;
+      }
+
+      .transactions .frame-17 {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0px 10px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        flex: 0 0 auto;
+      }
+
+      .transactions .repayment-terms-wrapper {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px;
+        position: relative;
+        flex: 0 0 auto;
+      }
+
+      .transactions .input-field-4 {
+        align-items: center;
+        justify-content: center;
+        align-self: stretch;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        height: 54px;
+        gap: 8px;
+        position: relative;
+      }
+
+      .transactions .calculate-btn {
+        justify-content: center;
+        padding: 11px 12px;
+        background-color: #fa1e1e;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        position: relative;
+        flex: 1;
+        align-self: stretch;
+        width: 100%;
+        flex-grow: 1;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .transactions .calculate-btn:hover {
+        background-color: #e01a1a;
+      }
+
+      .transactions .calculate-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px #4a90e2;
+      }
+
+      .transactions .value-2 {
+        font-weight: 600;
+        color: #ffffff;
+        font-size: 16px;
+        text-align: center;
+        letter-spacing: -0.16px;
+        line-height: 24px;
+        position: relative;
+        flex: 1;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+      }
+
+      /* Dropdown styling for browsers that support it */
+      .transactions .frequency-select option {
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-size: 14px;
+        padding: 8px;
+      }
+    </style>
+</head>
+<body>
+    <div class="transactions">
+      <div class="div">
+        <div class="frame">
+          <div class="frame-wrapper">
+            <div class="frame-2">
+              <div class="text-wrapper">Available Capital</div>
+              <div class="text-wrapper-2">ZMW1,054,200</div>
+            </div>
+          </div>
+        </div>
+        <p class="new-loan"><span class="span">+</span> <span class="text-wrapper-3"> New Loan</span></p>
+
+        <form class="frame-3" id="loanForm" method="POST" action="/loan_application_summary">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+          <!-- Borrower Information -->
+          <div class="input-field-wrapper">
+            <div class="form-row">
+              <!-- Organization Selection -->
+              <div class="form-group">
+                <label class="form-label" for="organization">Organization</label>
+                <div class="select-wrapper">
+                  <select id="organization" name="organisation_id" class="frequency-select" required>
+                    <option value="">Select organization</option>
+                    {% for org in organisations %}
+                      <option value="{{ org.id }}">{{ org.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <img
+                    class="select-arrow"
+                    src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTMgNC41TDYgNy41TDkgNC41IiBzdHJva2U9IiM2NjY2NjYiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+"
+                  />
+                </div>
+              </div>
+
+              <!-- Borrower NRC -->
+              <div class="form-group">
+                <label class="form-label" for="borrower_nrc">Borrower NRC</label>
+                <div class="text-input">
+                  <img
+                    class="vuesax-linear-user"
+                    src="https://c.animaapp.com/eP1QH6Qt/img/vuesax-linear-user-search.svg"
+                  />
+                  <input
+                    type="text"
+                    id="borrower_nrc"
+                    name="borrower_nrc"
+                    class="value"
+                    placeholder="Enter NRC number"
+                    style="border: none; background: transparent; flex: 1; font-family: inherit; font-size: inherit; color: inherit;"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loan Details Section -->
+          <div class="frame-4">
+            <div class="div-wrapper">
+              <div class="text-wrapper-4">Loan Details</div>
+            </div>
+
+            <div class="form-row">
+              <!-- Principal Amount -->
+              <div class="form-group amount">
+                <label class="form-label" for="principal">Principal Amount</label>
+                <div class="amount-input">
+                  <div class="currency-prefix">
+                    <div class="currency-text">ZMW</div>
+                  </div>
+                  <input
+                    type="number"
+                    id="principal"
+                    name="principal"
+                    class="amount-field"
+                    placeholder="0.00"
+                    step="0.01"
+                    min="0"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- Loan Term in Months -->
+              <div class="form-group months">
+                <label class="form-label" for="months">Loan Term</label>
+                <div class="months-input">
+                  <div class="months-label">
+                    <div class="currency-text">Days</div>
+                  </div>
+                  <input
+                    type="number"
+                    id="months"
+                    name="days"
+                    class="months-field"
+                    placeholder="0"
+                    min="1"
+                    max="360"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- Repayment Frequency -->
+              <div class="form-group frequency">
+                <label class="form-label" for="frequency">Repayment Method</label>
+                <div class="select-wrapper">
+                  <select id="frequency" name="method" class="frequency-select" required>
+                    <option value="">Select Method</option>
+                    <option value="amortisation">Amortisation</option>
+                    <option value="simple">Simple Interest</option>
+                    <option value="pwa">PWA</option>
+
+                  </select>
+                  <img
+                    class="select-arrow"
+                    src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTMgNC41TDYgNy41TDkgNC41IiBzdHJva2U9IiM2NjY2NjYiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calculation Section -->
+          <div class="frame-17">
+            <div class="repayment-terms-wrapper">
+              <div class="text-wrapper-4">Repayment Terms &amp; Summary</div>
+            </div>
+            <div class="input-field-wrapper">
+              <div class="input-field-4">
+                <button type="submit" class="calculate-btn">
+                  <div class="value-2">Calculate</div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById('loanForm').addEventListener('submit', function(e) {
+      // Remove e.preventDefault() to allow normal form submission to Flask route
+
+      // Optional: You can still do client-side validation here if needed
+      const formData = new FormData(this);
+      const organisationId = formData.get('organisation_id');
+      const borrowerNrc = formData.get('borrower_nrc');
+      const principal = parseFloat(formData.get('principal'));
+      const days = parseInt(formData.get('days'));
+      const method = formData.get('method');
+
+      // Basic client-side validation (optional)
+      if (!organisationId) {
+        alert('Please select an organization');
+        e.preventDefault();
+        return false;
+      }
+
+      if (!borrowerNrc.trim()) {
+        alert('Please enter borrower NRC');
+        e.preventDefault();
+        return false;
+      }
+
+      if (!principal || principal <= 0) {
+        alert('Please enter a valid principal amount');
+        e.preventDefault();
+        return false;
+      }
+
+      if (!days || days <= 0) {
+        alert('Please enter a valid number of days');
+        e.preventDefault();
+        return false;
+      }
+
+      if (!method) {
+        alert('Please select a repayment method');
+        e.preventDefault();
+        return false;
+      }
+
+      // If all validation passes, the form will submit normally to your Flask route
+      console.log('Form submitting with data:', {
+        organisation_id: organisationId,
+        borrower_nrc: borrowerNrc,
+        principal: principal,
+        days: days,
+        method: method
+      });
+    });
+
+    // Auto-format the principal amount input
+    document.getElementById('principal').addEventListener('input', function(e) {
+      let value = e.target.value;
+      if (value && !isNaN(value)) {
+        // You could add formatting logic here if needed
+        // For example, to add thousands separators:
+        // e.target.value = parseFloat(value).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2});
+      }
+    });
+
+    // Optional: Auto-format NRC input (common Zambian NRC format)
+    document.getElementById('borrower_nrc').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/[^0-9\/]/g, ''); // Allow only numbers and forward slash
+      e.target.value = value;
+    });
+
+    // Optional: Ensure days input doesn't exceed maximum
+    document.getElementById('months').addEventListener('input', function(e) {
+      let value = parseInt(e.target.value);
+      if (value > 360) {
+        e.target.value = 360;
+      }
+    });
+    </script>
+</body>
+
+{% endblock %}

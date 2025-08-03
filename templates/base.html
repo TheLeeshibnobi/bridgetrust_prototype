@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}bridgetrust{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            background-color: #f5f2e8;
+            min-height: 100vh;
+            width: 250px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            transform: translateX(0);
+            border-right: 1px solid #e0d9c7;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            padding: 70px 20px 20px 20px;
+            border-bottom: 1px solid #e0d9c7;
+            position: relative;
+        }
+
+        .new-loan-btn {
+            width: 100%;
+            background-color: #f0ede4;
+            border: 1px solid #d4cfc0;
+            color: #333;
+            padding: 10px 15px;
+            margin-top: 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .new-loan-btn:hover {
+            background-color: #eae6dc;
+            border-color: #c7c1b0;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            left: 15px;
+            top: 15px;
+            z-index: 1001;
+            background: #f5f2e8;
+            border: 1px solid #e0d9c7;
+            color: #666;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 10px 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .toggle-btn:hover {
+            color: #333;
+            background-color: #f0ede4;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .sidebar.collapsed ~ .toggle-btn {
+            background: #2d5aa0;
+            color: white;
+            border-color: #2d5aa0;
+        }
+
+        .logo {
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 12px;
+        }
+
+        .nav-section {
+            padding: 20px 0 10px 20px;
+        }
+
+        .nav-section-title {
+            color: #999;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .nav-item {
+            margin-bottom: 2px;
+        }
+
+        .nav-link {
+            color: #666;
+            padding: 10px 20px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            border-radius: 0;
+            transition: all 0.2s;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover {
+            color: #333;
+            background-color: #f0ede4;
+        }
+
+        .nav-link.active {
+            color: #333;
+            background-color: transparent;
+            border-bottom: 2px solid #dc3545;
+            margin: 0;
+            width: 100%;
+            border-radius: 0;
+            font-weight: 500;
+        }
+
+        .nav-link i {
+            width: 16px;
+            margin-right: 12px;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .content-container {
+            padding: 20px;
+            padding-top: 80px; /* Space for the toggle button */
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .main-content.expanded {
+                margin-left: 0;
+            }
+
+            .content-container {
+                padding-top: 80px;
+            }
+
+            .toggle-btn {
+                left: 15px;
+                top: 15px;
+            }
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-overlay.show {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Fixed Toggle Button -->
+    <button class="toggle-btn" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <i class="fas fa-bars" id="toggleIcon"></i>
+    </button>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <!-- Logo/Header -->
+        <div class="sidebar-header">
+            <a href="#" class="logo">
+                <span class="nav-link-text">Loan Manager</span>
+            </a>
+            <a href="{{ url_for('loan_application') }}">
+                <button class="new-loan-btn">
+                    <i class="fas fa-plus"></i> New Loan
+                </button>
+            </a>
+        </div>
+
+        <!-- Main Navigation -->
+        <div class="nav-section">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{url_for('home')}}">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span class="nav-link-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{url_for('organisation_transactions')}}">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span class="nav-link-text">Transactions</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{url_for('borrower_management')}}">
+                        <i class="fas fa-users"></i>
+                        <span class="nav-link-text">Customer Management</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-tasks"></i>
+                        <span class="nav-link-text">Loan Requests</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Support Section -->
+        <div class="nav-section">
+            <div class="nav-section-title">Support</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-puzzle-piece"></i>
+                        <span class="nav-link-text">Integrations</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-headset"></i>
+                        <span class="nav-link-text">Customer Care & Help</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-cog"></i>
+                        <span class="nav-link-text">Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+        <div class="content-container">
+            {% block content %}
+            <!-- Your page content will go here -->
+            {% endblock %}
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle sidebar function
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const overlay = document.querySelector('.sidebar-overlay');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            // For mobile
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('show');
+                overlay.classList.toggle('show');
+                return;
+            }
+
+            // For desktop
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+
+            // Change icon
+            if (sidebar.classList.contains('collapsed')) {
+                toggleIcon.className = 'fas fa-chevron-right';
+            } else {
+                toggleIcon.className = 'fas fa-bars';
+            }
+
+            // Save state
+            const sidebarCollapsed = sidebar.classList.contains('collapsed');
+        }
+
+        // Close sidebar function (for overlay clicks)
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        }
+
+        // Restore sidebar state on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set active navigation based on current URL
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Close mobile sidebar when clicking on a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+            }
+        });
+
+        // Add click functionality to New Loan button
+        document.querySelector('.new-loan-btn').addEventListener('click', function() {
+            // Add your new loan functionality here
+            console.log('New Loan clicked');
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

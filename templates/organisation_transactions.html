@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding: 20px 0;
+        border-bottom: 3px solid #e74c3c;
+    }
+
+    .revenue-section {
+        text-align: left;
+    }
+
+    .balance-section {
+        text-align: right;
+    }
+
+    .revenue-section h3, .balance-section h3 {
+        font-size: 16px;
+        font-weight: normal;
+        color: #666;
+        margin-bottom: 5px;
+    }
+
+    .revenue-section .amount, .balance-section .amount {
+        font-size: 36px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .loans-section {
+        background-color: white;
+        border-radius: 8px;
+        padding: 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .loans-table {
+        width: 100%;
+    }
+
+    .table-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #eee;
+    }
+
+    .table-header .row {
+        padding: 15px 20px;
+        font-weight: bold;
+        color: #666;
+        font-size: 14px;
+    }
+
+    .loan-row {
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .loan-row:hover {
+        background-color: #f8f9fa;
+    }
+
+    .loan-row:last-child {
+        border-bottom: none;
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr 50px;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .service-name {
+        font-size: 16px;
+        color: #333;
+    }
+
+    .amount-cell {
+        text-align: right;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .arrow {
+        text-align: center;
+        color: #ccc;
+        font-size: 18px;
+    }
+
+    .watermark {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        color: #ddd;
+        font-size: 14px;
+        z-index: 1000;
+    }
+
+    .watermark-text {
+        margin-bottom: 5px;
+    }
+
+    @media (max-width: 768px) {
+        .header-section {
+            flex-direction: column;
+            text-align: center;
+            gap: 20px;
+        }
+
+        .balance-section {
+            text-align: center;
+        }
+
+        .row {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .table-header {
+            display: none;
+        }
+
+        .amount-cell {
+            text-align: left;
+        }
+
+        .arrow {
+            display: none;
+        }
+    }
+</style>
+
+<!-- Header Section with Revenue and Balance -->
+<div class="header-section">
+    <div class="revenue-section">
+        <h3>Total Revenue</h3>
+        <div class="amount">ZMW {{ organisation.get('total_revenue') }}</div>
+    </div>
+    <div class="balance-section">
+        <h3>Total Balance</h3>
+        <div class="amount">ZMW {{ organisation.get('total_balance') }}</div>
+    </div>
+</div>
+
+<!-- Loans Section -->
+<div class="loans-section">
+    <div class="section-title">Loans by Customer group</div>
+
+    <div class="loans-table">
+        <!-- Table Header -->
+        <div class="table-header">
+            <div class="row">
+                <div>Service Category</div>
+                <div style="text-align: right;">Principal</div>
+                <div style="text-align: right;">Interest</div>
+                <div style="text-align: right;">Balance</div>
+                <div></div>
+            </div>
+        </div>
+
+        <!-- Loan Rows: Dynamically Rendered -->
+        {% for org in organisation_data %}
+            <a href="{{ url_for('organisation_borrowers', org_id=org.organisation_id) }}" class="loan-row">
+                <div class="row">
+                    <div class="service-name">{{ org.organisation_name }}</div>
+                    <div class="amount-cell">{{ org.total_principal_component | round(2) }}</div>
+                    <div class="amount-cell">{{ org.total_interest_component | round(2) }}</div>
+                    <div class="amount-cell">{{ org.total_balance | round(2) }}</div>
+                    <div class="arrow">›</div>
+                </div>
+            </a>
+        {% endfor %}
+
+    </div>
+</div>
+
+<!-- Watermark -->
+<div class="watermark">
+    <div class="watermark-text">Activate Windows</div>
+    <div>Go to Settings to activate Windows.</div>
+</div>
+
+<script>
+    // Add click tracking for analytics (optional)
+    document.querySelectorAll('.loan-row').forEach(row => {
+        row.addEventListener('click', function(e) {
+            // You can add analytics tracking here
+            console.log('Navigating to:', this.href);
+        });
+    });
+
+    // Add keyboard navigation support
+    document.addEventListener('keydown', function(e) {
+        const focusedElement = document.activeElement;
+        const loanRows = Array.from(document.querySelectorAll('.loan-row'));
+        const currentIndex = loanRows.indexOf(focusedElement);
+
+        if (e.key === 'ArrowDown' && currentIndex < loanRows.length - 1) {
+            e.preventDefault();
+            loanRows[currentIndex + 1].focus();
+        } else if (e.key === 'ArrowUp' && currentIndex > 0) {
+            e.preventDefault();
+            loanRows[currentIndex - 1].focus();
+        } else if (e.key === 'Enter' && currentIndex >= 0) {
+            e.preventDefault();
+            loanRows[currentIndex].click();
+        }
+    });
+
+    // Make loan rows focusable for keyboard navigation
+    document.querySelectorAll('.loan-row').forEach(row => {
+        row.setAttribute('tabindex', '0');
+    });
+
+    // Add hover effects for better user experience
+    document.querySelectorAll('.loan-row').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(2px)';
+        });
+
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0)';
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+LOAN AGREEMENT
+
+This Loan Agreement is made and entered into by and between:
+
+Lender: Bridge Trust
+and
+Borrower: {borrower_name} (ID: {borrower_id})
+Organisation: {organisation_name}
+
+1. Loan Amount
+The borrower has received a loan of ZMW {principal} from Bridge Trust.
+
+2. Loan Terms
+- Loan Method: {method}
+- Loan Tenure: {loan_tenure_days} days ({loan_tenure_months} months)
+- Monthly Interest Rate: {monthly_interest_rate}%
+- Total Repayable Amount: ZMW {recoverable_amount}
+- Monthly Instalment: ZMW {instalments}
+
+3. Repayment
+Repayments shall be made directly from the borrower’s pay cheque through the listed organisation.
+
+4. Acknowledgement
+The borrower acknowledges and agrees to the loan terms and authorises the employer to deduct the agreed instalment amounts from the monthly salary until the full recoverable amount is paid.
+
+Signed on this day.
+Bridge Trust Representative: ___________________
+Borrower: ___________________
+

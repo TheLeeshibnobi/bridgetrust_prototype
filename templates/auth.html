@@ -1,0 +1,395 @@
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Signup</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --dark-blue: #1e3a8a;
+            --teal: #0d9488;
+            --light-blue: #3b82f6;
+            --cyan: #06b6d4;
+            --light-gray: #f8f9fa;
+        }
+
+        body {
+            background: white;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(30, 58, 138, 0.1);
+            overflow: hidden;
+            max-width: 450px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .auth-header {
+            background: linear-gradient(135deg, var(--dark-blue) 0%, var(--teal) 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem 1.5rem;
+        }
+
+        .auth-header h2 {
+            margin: 0;
+            font-weight: 300;
+            font-size: 1.8rem;
+        }
+
+        .auth-body {
+            padding: 2rem 1.5rem;
+        }
+
+        .form-control {
+            border: 2px solid var(--light-gray);
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.25);
+        }
+
+        .form-label {
+            color: var(--dark-blue);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--dark-blue) 0%, var(--teal) 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.3);
+        }
+
+        .btn-outline-primary {
+            color: var(--teal);
+            border: 2px solid var(--teal);
+            border-radius: 10px;
+            padding: 10px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--teal);
+            border-color: var(--teal);
+            transform: translateY(-1px);
+        }
+
+        .form-switch .form-check-input {
+            background-color: var(--light-gray);
+            border-color: var(--light-gray);
+        }
+
+        .form-switch .form-check-input:checked {
+            background-color: var(--teal);
+            border-color: var(--teal);
+        }
+
+        .text-muted {
+            color: var(--dark-blue) !important;
+            opacity: 0.7;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--light-gray);
+        }
+
+        .divider span {
+            background: white;
+            color: var(--dark-blue);
+            padding: 0 15px;
+            font-size: 0.9rem;
+        }
+
+        .input-group-text {
+            background-color: var(--light-gray);
+            border: 2px solid var(--light-gray);
+            border-radius: 10px 0 0 10px;
+            color: var(--dark-blue);
+        }
+
+        .input-group .form-control {
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 1rem;
+        }
+
+        .fade-transition {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        @media (max-width: 768px) {
+            .auth-card {
+                margin: 0 15px;
+            }
+
+            .auth-header {
+                padding: 1.5rem 1rem;
+            }
+
+            .auth-body {
+                padding: 1.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2 id="auth-title">Welcome Back</h2>
+                <p class="mb-0 opacity-75" id="auth-subtitle">Sign in to your account</p>
+            </div>
+            <div class="auth-body">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Alert container for JavaScript messages -->
+                <div id="alert-container"></div>
+
+                <!-- Login Form -->
+                <form id="login-form" method="POST" action="/login">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                    <div class="mb-3">
+                        <label for="login-email" class="form-label">
+                            <i class="fas fa-envelope me-2"></i>Email Address
+                        </label>
+                        <input type="email" class="form-control" id="login-email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="login-password" class="form-label">
+                            <i class="fas fa-lock me-2"></i>Password
+                        </label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="login-password" name="password" required>
+                            <span class="input-group-text">
+                                <i class="fas fa-eye toggle-password" data-target="login-password" style="cursor: pointer;"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="remember-me">
+                        <label class="form-check-label" for="remember-me">
+                            Remember me
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mb-3">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </button>
+                </form>
+
+                <!-- Signup Form (Initially Hidden) -->
+                <form id="signup-form" method="POST" action="/signup" style="display: none;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="signup-username" class="form-label">
+                                <i class="fas fa-user me-2"></i>Username
+                            </label>
+                            <input type="text" class="form-control" id="signup-username" name="user_name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="signup-email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email
+                            </label>
+                            <input type="email" class="form-control" id="signup-email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nrc-number" class="form-label">
+                                <i class="fas fa-id-card me-2"></i>NRC Number
+                            </label>
+                            <input type="text" class="form-control" id="nrc-number" name="nrc_number" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="date-of-birth" class="form-label">
+                                <i class="fas fa-calendar me-2"></i>Date of Birth
+                            </label>
+                            <input type="date" class="form-control" id="date-of-birth" name="date_of_birth" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user-type" class="form-label">
+                            <i class="fas fa-users me-2"></i>User Type
+                        </label>
+                        <select class="form-control" id="user-type" name="user_type" required>
+                            <option value="">Select User Type</option>
+                            <option value="admin">Admin</option>
+                            <option value="user">Editor</option>
+                            <option value="moderator">Moderator</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="signup-password" class="form-label">
+                            <i class="fas fa-lock me-2"></i>Password
+                        </label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="signup-password" name="password" required>
+                            <span class="input-group-text">
+                                <i class="fas fa-eye toggle-password" data-target="signup-password" style="cursor: pointer;"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="secret-key" class="form-label">
+                            <i class="fas fa-key me-2"></i>Secret Key
+                        </label>
+                        <input type="text" class="form-control" id="secret-key" name="secret_key" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mb-3">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </button>
+                </form>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <button type="button" class="btn btn-outline-primary w-100" id="toggle-form">
+                    <span id="toggle-text">Don't have an account? Sign Up</span>
+                </button>
+
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Your data is secure with us
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle between login and signup forms
+        document.getElementById('toggle-form').addEventListener('click', function() {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const authTitle = document.getElementById('auth-title');
+            const authSubtitle = document.getElementById('auth-subtitle');
+            const toggleText = document.getElementById('toggle-text');
+
+            if (loginForm.style.display === 'none') {
+                // Show login form
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                authTitle.textContent = 'Welcome Back';
+                authSubtitle.textContent = 'Sign in to your account';
+                toggleText.textContent = "Don't have an account? Sign Up";
+            } else {
+                // Show signup form
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                authTitle.textContent = 'Create Account';
+                authSubtitle.textContent = 'Join us today';
+                toggleText.textContent = 'Already have an account? Sign In';
+            }
+        });
+
+        // Toggle password visibility
+        document.querySelectorAll('.toggle-password').forEach(function(toggle) {
+            toggle.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const passwordInput = document.getElementById(targetId);
+                const icon = this;
+
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        });
+
+        // Function to show alerts
+        function showAlert(message, type = 'danger') {
+            const alertContainer = document.getElementById('alert-container');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            alertContainer.appendChild(alertDiv);
+
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Add smooth transitions
+        document.querySelectorAll('.form-control').forEach(function(input) {
+            input.addEventListener('focus', function() {
+                this.parentNode.style.transform = 'scale(1.02)';
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentNode.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>

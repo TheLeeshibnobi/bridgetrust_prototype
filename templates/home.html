@@ -1,0 +1,992 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <style>
+    @import url("https://fonts.googleapis.com/css?family=IBM+Plex+Sans+Devanagari:400,600,500,700,200|Inter:700,800,500,400,600|Roboto:700");
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        background-color: #f8f9fa;
+        /* Removed fixed height and hidden overflow */
+    }
+
+    .dashboard-container {
+        /* Changed to allow content to grow and scroll */
+        max-height: 100vh;
+        padding: 16px;
+        padding-bottom: 24px;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .dashboard-header {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-bottom: 20px;
+        flex-shrink: 0;
+        /* Updated height for word logo */
+        height: 40px;
+        padding-right: 20px;
+    }
+
+    .capital-display {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        padding: 12px 16px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .capital-amount {
+        font-weight: 700;
+        color: #000000;
+        font-size: 18px;
+        line-height: 22px;
+        margin: 0;
+    }
+
+    .capital-label {
+        font-weight: 500;
+        color: #000000;
+        font-size: 11px;
+        line-height: 13px;
+        margin: 2px 0 0 0;
+    }
+
+    .main-content-home {
+        display: flex;
+        gap: 20px;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .charts-section {
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-height: 0;
+    }
+
+    .revenue-recovery-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        border: 0.5px solid #9ca0a4;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        flex-shrink: 0;
+    }
+
+    .card-title-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .title-with-arrows {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .arrow-icon {
+        width: 8px;
+        height: 8px;
+    }
+
+    .card-title {
+        font-weight: 700;
+        color: #000000;
+        font-size: 20px;
+        margin: 0;
+    }
+
+    .metrics-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .percentage-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2px 6px;
+        background-color: #c0f1e5;
+        border-radius: 20px;
+    }
+
+    .percentage-text {
+        font-family: "Inter", Helvetica;
+        font-weight: 800;
+        color: #000000;
+        font-size: 7px;
+        margin: 0;
+    }
+
+    .legend {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 6px;
+        background-color: #c0f1e5;
+        border-radius: 20px;
+    }
+
+    .legend-dot {
+        width: 5px;
+        height: 5px;
+        background-color: #ffffff;
+        border-radius: 3px;
+        border: 1px solid #025864;
+    }
+
+    .legend-text {
+        font-family: "Inter", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 7px;
+        margin: 0;
+    }
+
+    .card-controls {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+    }
+
+    .period-display {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .quarter-text {
+        font-weight: 700;
+        color: #000000;
+        font-size: 20px;
+        margin: 0;
+    }
+
+    .year-text {
+        font-weight: 200;
+        color: #000000;
+        font-size: 20px;
+        margin: 0;
+    }
+
+    .control-buttons {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .compare-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3px 8px;
+        background-color: #e9f1ef;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-family: "Inter", Helvetica;
+        font-weight: 500;
+        color: #000000;
+        font-size: 7px;
+    }
+
+    .icon-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        width: 12px;
+        height: 12px;
+    }
+
+    .chart-container {
+        position: relative;
+        width: 100%;
+        flex: 1;
+        min-height: 200px;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        margin-bottom: 12px;
+    }
+
+    .chart-wrapper {
+        position: relative;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        padding-left: 50px;
+        padding-bottom: 20px;
+    }
+
+    .chart-bars {
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        gap: 6px;
+        flex: 1;
+        padding: 0 10px;
+    }
+
+    .bar {
+        position: relative;
+        width: 12%;
+        background-color: #eaedf1;
+        border-radius: 6px 6px 0 0;
+        align-self: stretch;
+        transition: height 0.3s ease;
+    }
+
+    .bar:nth-child(1) { height: 28.88%; }
+    .bar:nth-child(2) { height: 33.88%; }
+    .bar:nth-child(3) { height: 37.22%; }
+    .bar:nth-child(4) { height: 74.44%; }
+    .bar:nth-child(5) { height: 74.44%; }
+    .bar:nth-child(6) { height: 76.66%; }
+    .bar:nth-child(7) { height: 93.33%; background-color: #e9edf0; }
+
+    .bar-highlighted {
+        position: relative;
+        width: 12%;
+        height: 100%;
+        background-color: #eff1f5;
+        border-radius: 6px;
+        border: 1px solid #003049;
+        align-self: stretch;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+    }
+
+    .bar-highlighted::after {
+        content: '';
+        position: relative;
+        width: 90%;
+        height: 93.33%;
+        background-color: #003049;
+        border-radius: 6px 6px 0 0;
+    }
+
+    .y-axis {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        width: 50px;
+        justify-content: space-between;
+        padding: 0 8px 0 0;
+    }
+
+    .y-axis-label {
+        font-family: "Inter", Helvetica;
+        font-weight: 400;
+        color: #7f7f7f;
+        font-size: 7px;
+        text-align: right;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .chart-indicators {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 20px;
+        left: 50px;
+        pointer-events: none;
+    }
+
+    .goal-line {
+        position: relative;
+        height: 12px;
+        border-top: 1px dashed #003049;
+        top: 10%;
+        width: 100%;
+    }
+
+    .goal-indicator {
+        position: absolute;
+        top: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 2px 6px;
+        background-color: #eaedf1;
+        border-radius: 4px;
+        pointer-events: auto;
+    }
+
+    .goal-text {
+        font-family: "Inter", Helvetica;
+        font-weight: 400;
+        color: #003049;
+        font-size: 7px;
+        margin: 0;
+    }
+
+    .current-indicator {
+        position: absolute;
+        top: 25%;
+        left: 88%;
+        display: flex;
+        align-items: center;
+        padding: 2px 5px;
+        background-color: #003049;
+        border-radius: 8px;
+        transform: translateX(-50%);
+        pointer-events: auto;
+    }
+
+    .current-text {
+        font-family: "Inter", Helvetica;
+        font-weight: 600;
+        color: #ffffff;
+        font-size: 7px;
+        margin: 0;
+    }
+
+    .x-axis {
+        display: flex;
+        align-items: center;
+        padding: 6px 10px 0 60px;
+        border-top: 1px solid #000000;
+        flex-shrink: 0;
+    }
+
+    .x-axis-label {
+        flex: 1;
+        text-align: center;
+        font-family: "Inter", Helvetica;
+        font-weight: 400;
+        color: #000000;
+        font-size: 7px;
+        padding: 4px 6px;
+    }
+
+    .capital-summary-card {
+        background-color: #f5f2e8;
+        border-radius: 12px;
+        padding: 20px;
+        color: #000000;
+        overflow: hidden;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .summary-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        flex-shrink: 0;
+    }
+
+    .summary-title {
+        font-weight: 600;
+        color: #000000;
+        font-size: 20px;
+        line-height: 24px;
+        margin: 0;
+    }
+
+    .growth-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3px 10px;
+        background-color: #5dfcaf;
+        border-radius: 8px;
+        border: 1px solid #025864;
+    }
+
+    .growth-text {
+        font-weight: 600;
+        color: #000000;
+        font-size: 10px;
+        line-height: 12px;
+        margin: 0;
+    }
+
+    .progress-bar {
+        height: 16px;
+        background-color: #58d5b2;
+        border-radius: 8px;
+        border: 1px solid #003049;
+        box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+        margin-bottom: 16px;
+        overflow: hidden;
+        display: flex;
+        flex-shrink: 0;
+    }
+
+    .progress-fill {
+        flex: 1;
+        background-color: #1b4764;
+        border-radius: 8px;
+        border: 1px solid #003049;
+    }
+
+    .progress-remaining {
+        width: 80px;
+    }
+
+    .summary-content {
+        display: flex;
+        gap: 32px;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .summary-column {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .column-title {
+        font-weight: 700;
+        color: #000000;
+        font-size: 14px;
+        line-height: 16px;
+        margin: 0 0 8px 0;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .summary-label {
+        font-weight: 400;
+        color: #000000;
+        font-size: 14px;
+        line-height: 16px;
+        margin: 0;
+    }
+
+    .summary-value {
+        font-weight: 400;
+        color: #000000;
+        font-size: 14px;
+        line-height: 16px;
+        text-align: right;
+        margin: 0;
+    }
+
+    .summary-total-label {
+        font-weight: 500;
+        color: #000000;
+        font-size: 16px;
+        line-height: 20px;
+        margin: 0;
+    }
+
+    .summary-total-value {
+        font-weight: 500;
+        color: #000000;
+        font-size: 16px;
+        line-height: 20px;
+        text-align: right;
+        margin: 0;
+    }
+
+    .view-all-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 20px;
+        background-color: #ffffff;
+        border-radius: 6px;
+        border: 1px solid #003049;
+        cursor: pointer;
+        margin-top: 16px;
+        align-self: flex-end;
+        flex-shrink: 0;
+    }
+
+    .view-all-text {
+        font-family: "Inter", Helvetica;
+        font-weight: 700;
+        color: #003049;
+        font-size: 10px;
+        line-height: 12px;
+        margin: 0;
+    }
+
+    .updates-sidebar {
+        flex: 1;
+        max-width: 350px;
+        padding: 20px;
+        border-radius: 12px;
+        border: 0.5px solid #9ca0a4;
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .updates-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-shrink: 0;
+    }
+
+    .updates-title {
+        font-weight: 700;
+        color: #000000;
+        font-size: 20px;
+        line-height: 24px;
+        margin: 0;
+    }
+
+    .updates-controls {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .mark-read-btn {
+        font-size: 10px;
+        font-weight: 400;
+        color: #000000;
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: center;
+        padding: 0;
+    }
+
+    .notification-count {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 14px;
+        padding: 1px 6px;
+        background-color: #ec0404;
+        border-radius: 16px;
+    }
+
+    .count-text {
+        font-family: "Roboto", Helvetica;
+        font-weight: 700;
+        color: #ffffff;
+        font-size: 8px;
+        line-height: 10px;
+        margin: 0;
+    }
+
+    .notifications-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .notification {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        padding: 12px 8px;
+        background-color: #ffffff;
+        border-radius: 6px;
+        border: 1px solid #e2e4e8;
+        flex-shrink: 0;
+    }
+
+    .notification-content {
+        display: flex;
+        gap: 10px;
+    }
+
+    .notification-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+    }
+
+    .notification-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .notification-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .notification-text {
+        flex: 1;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        color: #000000;
+        font-size: 13px;
+        margin: 0 0 3px 0;
+    }
+
+    .notification-description {
+        font-weight: 400;
+        color: #000000;
+        font-size: 10px;
+        line-height: 13px;
+        margin: 0;
+    }
+
+    .notification-description .highlight {
+        font-weight: 600;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        width: 12px;
+        height: 12px;
+        flex-shrink: 0;
+    }
+
+    .notification-action {
+        margin-top: 4px;
+    }
+
+    .action-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        font-weight: 500;
+        color: #000000;
+        font-size: 10px;
+        text-decoration: underline;
+    }
+
+    /* Focus styles for accessibility */
+    button:focus,
+    a:focus {
+        outline: 2px solid #4a90e2;
+        outline-offset: 2px;
+    }
+
+    button:hover {
+        opacity: 0.9;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .main-content-home {
+            flex-direction: column;
+        }
+
+        .updates-sidebar {
+            max-width: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 12px;
+        }
+
+        .dashboard-header {
+            flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .main-content-home {
+            gap: 16px;
+        }
+
+        .revenue-recovery-card,
+        .capital-summary-card,
+        .updates-sidebar {
+            padding: 16px;
+        }
+
+        .summary-content {
+            flex-direction: column;
+            gap: 16px;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header" style="display: flex; align-items: center; justify-content: space-between;">
+            <h1 style="font-size: 24px; font-weight: 700; color: #003049;">Your Logo</h1>
+            <div class="capital-display" style="font-size: 14px; text-align: right;">
+                <p class="capital-amount" style="margin: 0; font-size: 18px;">K1,054,200.00</p>
+                <p class="capital-label" style="margin: 0; font-size: 12px;">Available Capital</p>
+            </div>
+        </div>
+
+        <div class="main-content-home">
+            <section class="charts-section">
+                <div class="revenue-recovery-card">
+                    <div class="card-header">
+                        <div class="card-title-section">
+                            <div class="title-row">
+                                <div class="title-with-arrows">
+                                    <svg class="arrow-icon" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M2 8L5 2L8 8" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <h2 class="card-title">Revenue Recovery</h2>
+                                    <svg class="arrow-icon" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M2 8L5 2L8 8" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="metrics-row">
+                                <div class="percentage-badge">
+                                    <p class="percentage-text">+8%</p>
+                                </div>
+                                <div class="legend">
+                                    <div class="legend-dot"></div>
+                                    <p class="legend-text">Collected:</p>
+                                    <p class="legend-text">Balance:</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-controls">
+                            <div class="period-display">
+                                <p class="quarter-text">Q1</p>
+                                <p class="year-text">2025</p>
+                            </div>
+                            <div class="control-buttons">
+                                <button class="compare-btn">Compare</button>
+                                <button class="icon-btn" aria-label="Settings">
+                                    <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6 7.5C6.83 7.5 7.5 6.83 7.5 6C7.5 5.17 6.83 4.5 6 4.5C5.17 4.5 4.5 5.17 4.5 6C4.5 6.83 5.17 7.5 6 7.5Z" stroke="#000" stroke-width="0.75"/>
+                                    </svg>
+                                </button>
+                                <button class="icon-btn" aria-label="Maximize">
+                                    <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M2 2H10V10H2V2Z" stroke="#000" stroke-width="0.75"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-wrapper">
+                            <div class="y-axis"></div>
+                            <div class="chart-bars">
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar-highlighted"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="capital-summary-card">
+                    <div class="summary-header">
+                        <h2 class="summary-title">Disbursed Capital Summary</h2>
+                        <div class="growth-badge">
+                            <p class="growth-text">+8%</p>
+                        </div>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                        <div class="progress-remaining"></div>
+                    </div>
+
+                    <div class="summary-content">
+                        <div class="summary-column">
+                            <h3 class="column-title">What you've given out*</h3>
+                            <div class="summary-row">
+                                <p class="summary-label">Principal</p>
+                                <p class="summary-value">{{ total_principal_given }}</p>
+                            </div>
+                            <div class="summary-row">
+                                <p class="summary-label">Interest earned</p>
+                                <p class="summary-value">{{ interest_earned }}</p>
+                            </div>
+                            <div class="summary-row">
+                                <p class="summary-total-label">Total Receivable</p>
+                                <p class="summary-total-value">{{ total_receivables }}</p>
+                            </div>
+                        </div>
+
+                        <div class="summary-column">
+                            <h3 class="column-title">What you're still owed*</h3>
+                            <div class="summary-row">
+                                <p class="summary-label">Principal</p>
+                                <p class="summary-value">359,000</p>
+                            </div>
+                            <div class="summary-row">
+                                <p class="summary-label">Interest</p>
+                                <p class="summary-value">102,000</p>
+                            </div>
+                            <div class="summary-row">
+                                <p class="summary-total-label">Total Balance</p>
+                                <p class="summary-total-value">461,000</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('organisation_transactions') }}">
+                        <button class="view-all-btn">
+                            <span class="view-all-text">View all Transactions</span>
+                        </button>
+                    </a>
+                </div>
+            </section>
+
+            <aside class="updates-sidebar">
+                <div class="updates-header">
+                    <h2 class="updates-title">Updates</h2>
+                    <div class="updates-controls">
+                        <button class="mark-read-btn">Mark all as read</button>
+                        <div class="notification-count">
+                            <span class="count-text">3</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="notifications-list">
+                    <article class="notification">
+                        <div class="notification-content">
+                            <svg class="notification-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 1L10 6H6L8 1ZM8 15L6 10H10L8 15Z" fill="#4CAF50"/>
+                            </svg>
+                            <div class="notification-body">
+                                <div class="notification-header">
+                                    <div class="notification-text">
+                                        <h3 class="notification-title">Automated Balance Recovery initiated</h3>
+                                        <p class="notification-description">
+                                            120 Reminder Alerts have been sent to the customers that still have balances. Click below to view the details.
+                                        </p>
+                                    </div>
+                                    <button class="close-btn" aria-label="Close notification">
+                                        <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M9 3L3 9M3 3L9 9" stroke="#000" stroke-width="1" stroke-linecap="round"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="notification-action">
+                                    <button class="action-btn">View Recovery Details</button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="notification">
+                        <div class="notification-content">
+                            <svg class="notification-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="8" cy="8" r="7" fill="none" stroke="#FF9800" stroke-width="1"/>
+                                <path d="M8 4V8L10 10" stroke="#FF9800" stroke-width="1" stroke-linecap="round"/>
+                            </svg>
+                            <div class="notification-body">
+                                <div class="notification-header">
+                                    <div class="notification-text">
+                                        <h3 class="notification-title">Balances Alert!</h3>
+                                        <p class="notification-description">
+                                            Many parents haven't adhered to school payment policy's. Click the button below to follow up the issue.
+                                        </p>
+                                    </div>
+                                    <button class="close-btn" aria-label="Close notification">
+                                        <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M9 3L3 9M3 3L9 9" stroke="#000" stroke-width="1" stroke-linecap="round"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="notification-action">
+                                    <button class="action-btn">Follow up</button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="notification">
+                    <div class="notification-content">
+                        <svg class="notification-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="8" cy="8" r="7" fill="none" stroke="#FF9800" stroke-width="1"/>
+                            <path d="M8 4V8L10 10" stroke="#FF9800" stroke-width="1" stroke-linecap="round"/>
+                        </svg>
+                        <div class="notification-body">
+                            <div class="notification-header">
+                                <div class="notification-text">
+                                    <h3 class="notification-title">Balances Alert!</h3>
+                                    <p class="notification-description">
+                                        Many parents haven't adhered to school payment policy's. Click the button below to follow up the issue.
+                                    </p>
+                                </div>
+                                <button class="close-btn" aria-label="Close notification">
+                                    <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 3L3 9M3 3L9 9" stroke="#000" stroke-width="1" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="notification-action">
+                                <button class="action-btn">Follow up</button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </aside>
+    </div>
+</div>
+</body>
+{% endblock %}

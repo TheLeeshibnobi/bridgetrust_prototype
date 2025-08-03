@@ -1,0 +1,396 @@
+<!-- Extend from base.html -->
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+    }
+
+    .header-wrapper {
+        width: 100%;
+        background-color: #f1f3f4;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .header {
+        max-width: 1200px;
+        margin: 0 auto;
+        color: #333;
+        padding: 15px 20px;
+        font-size: 16px;
+        font-weight: normal;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+    }
+
+    .content {
+        display: flex;
+    }
+
+    .section {
+        flex: 1;
+        padding: 20px;
+        border-right: 1px solid #ddd;
+    }
+
+    .section:last-child {
+        border-right: none;
+    }
+
+    .section h3 {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .field-row {
+        display: flex;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .field-label {
+        min-width: 120px;
+        color: #333;
+    }
+
+    .field-value {
+        color: #333;
+    }
+
+    .documents-section .document-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 8px;
+        background: #fafafa;
+    }
+
+    .document-name {
+        font-size: 14px;
+        color: #333;
+    }
+
+    .view-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 4px 12px;
+        border-radius: 3px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .amortization-section {
+        padding: 20px;
+        border-top: 1px solid #ddd;
+    }
+
+    .amortization-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .amortization-header h3 {
+        font-size: 16px;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .export-btn {
+        background: #000;
+        color: white;
+        border: none;
+        padding: 6px 16px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .table-container {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    th {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #ddd;
+        padding: 10px 8px;
+        text-align: left;
+        font-weight: bold;
+        color: #333;
+    }
+
+    td {
+        padding: 10px 8px;
+        border-bottom: 1px solid #eee;
+        color: #333;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    .status-paid {
+        background: #007bff;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        display: inline-block;
+    }
+
+    .loan-details-section {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .loan-details-row {
+        display: flex;
+        margin-bottom: 8px;
+    }
+
+    .loan-details-left {
+        flex: 1;
+        display: flex;
+    }
+
+    .loan-details-right {
+        flex: 1;
+        display: flex;
+        margin-left: 20px;
+    }
+
+    .loan-details-left .field-label,
+    .loan-details-right .field-label {
+        min-width: 100px;
+        font-size: 14px;
+    }
+
+    .loan-details-left .field-value,
+    .loan-details-right .field-value {
+        font-size: 14px;
+    }
+</style>
+
+<div class="header-wrapper">
+    <div class="header">
+        Loan Information - {{ borrower.get('first_name', '') }} {{ borrower.get('last_name', '') }}
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="content">
+        <!-- Personal Information Section -->
+        <div class="section">
+            <h3>Personal Information</h3>
+
+            <div class="field-row">
+                <span class="field-label">
+                    Full Names: {{ borrower.get('first_name', '') }} {{ borrower.get('last_name', '') }}
+                </span>
+                <span class="field-value"></span>
+            </div>
+
+            <div class="field-row">
+                <span class="field-label">
+                    Email Address: {{ borrower.get('email', '') }}
+                </span>
+                <span class="field-value"></span>
+            </div>
+
+            <div class="field-row">
+                <span class="field-label">
+                    Phone Number: {{ borrower.get('phone', '') }}
+                </span>
+                <span class="field-value"></span>
+            </div>
+
+            <div class="field-row">
+                <span class="field-label">
+                    NRC/Passport: {{ borrower.get('nrc_number', '') }}
+                </span>
+                <span class="field-value"></span>
+            </div>
+
+            <div class="field-row">
+                <span class="field-label">
+                    Place of work: {{ borrower.get('organisation', '') }}
+                </span>
+                <span class="field-value"></span>
+            </div>
+
+            <!--
+            <div class="field-row">
+                <span class="field-label">Credit Score:</span>
+                <span class="field-value"></span>
+            </div>
+            -->
+        </div>
+
+
+        <!-- Loan Details Section -->
+        <div class="section loan-details-section">
+            <h3>Loan Details</h3>
+            <div class="loan-details-row">
+                <div class="loan-details-left">
+                    <span class="field-label">Loan Status: {{ loan.get('status', '') }}</span>
+                    <span class="field-value"></span>
+                </div>
+                <div class="loan-details-right">
+                    <span class="field-label">Ref No:</span>
+                    <span class="field-value"></span>
+                </div>
+            </div>
+            <div class="loan-details-row">
+                <div class="loan-details-left">
+                    <span class="field-label">Loan Principal: {{ loan.get('loan_amount', '') }}</span>
+                    <span class="field-value"></span>
+                </div>
+                <div class="loan-details-right">
+                    <span class="field-label">Interest rate: {{ loan.get('interest_rate', '') }}</span>
+                    <span class="field-value"></span>
+                </div>
+            </div>
+            <div class="loan-details-row">
+                <div class="loan-details-left">
+                    <span class="field-label">Issue Date: {{ loan.get('created_at', '') }}</span>
+                    <span class="field-value"></span>
+                </div>
+                <div class="loan-details-right">
+                    <span class="field-label">Maturity Date: {{ loan.get('end_date', '') }}</span>
+                    <span class="field-value"></span>
+                </div>
+            </div>
+
+            <div class="loan-details-row">
+                <div class="loan-details-left">
+                    <span class="field-label">Installment Amount: {{ loan.get('monthly_payment', '') }}</span>
+                    <span class="field-value"></span>
+                </div>
+                <div class="loan-details-right">
+                    <span class="field-label">Loan Officer: {{ loan.get('user_name', '') }}</span>
+                    <span class="field-value"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supporting Documents Section -->
+        <div class="section documents-section">
+            <h3>Supporting Documents</h3>
+            <div class="document-item">
+                <span class="document-name">Loan Agreement</span>
+                <button class="view-btn" onclick="viewDocument('loan-agreement')">View</button>
+            </div>
+            <div class="document-item">
+                <span class="document-name">Proof of Identity</span>
+                <button class="view-btn" onclick="viewDocument('proof-identity')">View</button>
+            </div>
+            <div class="document-item">
+                <span class="document-name">Amortization Schedule</span>
+                <button class="view-btn" onclick="viewDocument('amortization')">View</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Amortization Schedule Section -->
+    <div class="amortization-section">
+        <div class="amortization-header">
+            <h3>Amortization Schedule</h3>
+            <button class="export-btn" onclick="exportSchedule()">Export</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Due Date</th>
+                        <th>Payment Due</th>
+                        <th>Interest</th>
+                        <th>Principal</th>
+                        <th>Balance</th>
+                        <th>Actual Paid</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>30/05/2025</td>
+                        <td>1053.25</td>
+                        <td>315.975</td>
+                        <td>737.275</td>
+                        <td>5100</td>
+                        <td>1053.25</td>
+                        <td><span class="status-paid">Paid</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function viewDocument(docType) {
+        alert(`Opening ${docType.replace('-', ' ')} document...`);
+        console.log(`Viewing document: ${docType}`);
+    }
+
+    function exportSchedule() {
+        const table = document.querySelector('table');
+        let csvContent = '';
+        const rows = table.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            const cols = row.querySelectorAll('th, td');
+            const rowData = Array.from(cols).map(col => {
+                let text = col.textContent.trim();
+                if (col.querySelector('.status-paid')) {
+                    text = col.querySelector('.status-paid').textContent;
+                }
+                return `"${text}"`;
+            }).join(',');
+            csvContent += rowData + '\n';
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'amortization_schedule.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }
+</script>
+
+{% endblock %}

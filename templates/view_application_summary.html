@@ -1,0 +1,828 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <style>
+      @import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+      @import url("https://fonts.googleapis.com/css?family=IBM+Plex+Sans+Devanagari:400,700,600");
+
+      * {
+        -webkit-font-smoothing: antialiased;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0px;
+        height: 100%;
+        padding: 0;
+      }
+
+      .transactions {
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        width: 100%;
+        padding-left: 20px;
+        margin: 0;
+        padding-top: 0;
+      }
+
+      .transactions .div {
+        background-color: #ffffff;
+        width: 100%;
+        max-width: 1200px;
+        height: auto;
+        min-height: 100vh;
+        position: relative;
+        margin: 0;
+        padding-top: 0;
+      }
+
+      .transactions .frame {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 80px;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 16px 0px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: #f6f8f9;
+        border-bottom-width: 3px;
+        border-bottom-style: solid;
+        border-color: #fc9b9b;
+        margin: 0;
+      }
+
+      .transactions .frame-wrapper {
+        display: flex;
+        width: 100%;
+        max-width: 1151px;
+        align-items: center;
+        position: relative;
+        flex: 0 0 auto;
+      }
+
+      .transactions .frame-2 {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        position: relative;
+        flex: 1;
+        flex-grow: 1;
+      }
+
+      .transactions .text-wrapper {
+        position: relative;
+        align-self: stretch;
+        margin-top: 0;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #000000;
+        font-size: 14px;
+        letter-spacing: -0.14px;
+        line-height: 20px;
+      }
+
+      .transactions .text-wrapper-2 {
+        position: relative;
+        align-self: stretch;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 24px;
+        letter-spacing: 0;
+        line-height: 28px;
+      }
+
+      .transactions .new-loan {
+        position: absolute;
+        top: 100px;
+        left: 20px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 700;
+        color: transparent;
+        font-size: 16px;
+        letter-spacing: -0.16px;
+        line-height: 24px;
+        white-space: nowrap;
+        margin: 0;
+      }
+
+      .transactions .span {
+        color: #fa1e1e;
+        letter-spacing: -0.04px;
+      }
+
+      .transactions .text-wrapper-4 {
+        color: #000000;
+        letter-spacing: -0.04px;
+      }
+
+      .transactions .frame-5 {
+        display: flex;
+        flex-direction: column;
+        width: calc(100% - 40px);
+        max-width: 1188px;
+        align-items: flex-start;
+        gap: 24px;
+        padding: 12px 12px 22px;
+        position: absolute;
+        top: 140px;
+        left: 20px;
+        border-radius: 16px;
+        border: 0.5px solid;
+        border-color: #9ca0a4;
+      }
+
+      .transactions .input-field-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        flex: 0 0 auto;
+      }
+
+      .transactions .input-field {
+        align-items: flex-start;
+        justify-content: flex-end;
+        align-self: stretch;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        height: 54px;
+        gap: 8px;
+        position: relative;
+      }
+
+      .transactions .text-input {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 11px 12px;
+        position: relative;
+        flex: 1;
+        align-self: stretch;
+        width: 100%;
+        flex-grow: 1;
+        background-color: #ffffff;
+        border-radius: 8px;
+        border: 1px solid;
+        border-color: #cbd0d8;
+      }
+
+      .transactions .vuesax-linear-user {
+        position: relative;
+        width: 24px;
+        height: 24px;
+      }
+
+      .transactions .value {
+        font-weight: 400;
+        color: #333333;
+        font-size: 14px;
+        letter-spacing: -0.14px;
+        line-height: 20px;
+        position: relative;
+        flex: 1;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+      }
+
+      .transactions .frame-6 {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 24px;
+        padding: 12px 10px 12px 20px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        flex: 0 0 auto;
+      }
+
+      .transactions .loan-summary-terms-wrapper {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        position: relative;
+        flex: 0 0 auto;
+      }
+
+      .transactions .loan-summary-terms {
+        position: relative;
+        width: fit-content;
+        margin-top: -1.00px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 700;
+        color: #000000;
+        font-size: 14px;
+        letter-spacing: -0.14px;
+        line-height: 20px;
+        white-space: nowrap;
+      }
+
+      .transactions .frame-7 {
+        display: flex;
+        align-items: center;
+        gap: 100px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        flex: 0 0 auto;
+      }
+
+      .transactions .input-field-2 {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        align-items: flex-start;
+        justify-content: flex-end;
+        gap: 8px;
+        position: relative;
+        flex: 1;
+        flex-grow: 1;
+      }
+
+      .transactions .frame-8 {
+        display: flex;
+        align-items: flex-start;
+        gap: 40px;
+        padding: 16px 20px;
+        position: relative;
+        flex: 1;
+        align-self: stretch;
+        width: 100%;
+        flex-grow: 1;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid;
+        border-color: #e9ecef;
+      }
+
+      .transactions .frame-9 {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        position: relative;
+        flex: 1;
+        flex-grow: 1;
+      }
+
+      .transactions .frame-10 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        flex: 0 0 auto;
+      }
+
+      .transactions .text-wrapper-5 {
+        position: relative;
+        width: fit-content;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #666666;
+        font-size: 12px;
+        letter-spacing: -0.12px;
+        line-height: 18px;
+        white-space: nowrap;
+      }
+
+      .transactions .text-wrapper-6 {
+        position: relative;
+        width: fit-content;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 12px;
+        letter-spacing: -0.12px;
+        line-height: 18px;
+        white-space: nowrap;
+      }
+
+      .transactions .frame-11 {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0px 10px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        flex: 0 0 auto;
+      }
+
+      .transactions .frame-12 {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px;
+        position: relative;
+        flex: 0 0 auto;
+      }
+
+      .transactions .text-wrapper-7 {
+        position: relative;
+        width: fit-content;
+        margin-top: -1.00px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 700;
+        color: #000000;
+        font-size: 14px;
+        letter-spacing: -0.14px;
+        line-height: 20px;
+        white-space: nowrap;
+      }
+
+      .transactions .frame-13 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        flex: 0 0 auto;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid;
+        border-color: #e9ecef;
+        margin-bottom: 8px;
+      }
+
+      .transactions .tick-circle {
+        position: relative;
+        width: 20px;
+        height: 20px;
+      }
+
+      .transactions .text-wrapper-8 {
+        position: relative;
+        flex: 1;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #333333;
+        font-size: 12px;
+        letter-spacing: -0.12px;
+        line-height: 18px;
+      }
+
+      .transactions .frame-14 {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 6px 12px;
+        position: relative;
+        flex: 0 0 auto;
+        background-color: #ffffff;
+        border-radius: 4px;
+        border: 1px solid;
+        border-color: #cbd0d8;
+        cursor: pointer;
+      }
+
+      .transactions .frame-14:hover {
+        background-color: #f8f9fa;
+      }
+
+      .transactions .text-wrapper-9 {
+        position: relative;
+        width: fit-content;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 500;
+        color: #666666;
+        font-size: 11px;
+        letter-spacing: -0.11px;
+        line-height: 16px;
+        white-space: nowrap;
+      }
+
+      .transactions .frame-15 {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px 10px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        flex: 0 0 auto;
+        justify-content: flex-end;
+      }
+
+      .transactions .frame-16 {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 24px;
+        position: relative;
+        flex: 0 0 auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        border: 1px solid;
+        border-color: #cbd0d8;
+        cursor: pointer;
+      }
+
+      .transactions .frame-16:hover {
+        background-color: #f8f9fa;
+      }
+
+      .transactions .text-wrapper-10 {
+        position: relative;
+        width: fit-content;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 500;
+        color: #666666;
+        font-size: 14px;
+        letter-spacing: -0.14px;
+        line-height: 20px;
+        white-space: nowrap;
+      }
+
+      .transactions .frame-17 {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 24px;
+        position: relative;
+        flex: 0 0 auto;
+        background-color: #fa1e1e;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      .transactions .frame-17:hover {
+        background-color: #e01a1a;
+      }
+
+      .transactions .text-wrapper-11 {
+        position: relative;
+        width: fit-content;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #ffffff;
+        font-size: 14px;
+        letter-spacing: -0.14px;
+        line-height: 20px;
+        white-space: nowrap;
+      }
+
+      /* Modal styles for CSV preview */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 95%;
+        max-width: 1200px;
+        border-radius: 8px;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+      }
+
+      .csv-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        font-size: 12px;
+      }
+
+      .csv-table th,
+      .csv-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+
+      .csv-table th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+        position: sticky;
+        top: 0;
+      }
+
+      .csv-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      .csv-table tr:hover {
+        background-color: #f5f5f5;
+      }
+
+      /* Contract preview styles */
+      .contract-content {
+        background-color: #ffffff;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-family: "Times New Roman", serif;
+        line-height: 1.6;
+        color: #333;
+        white-space: pre-wrap;
+        max-height: 60vh;
+        overflow-y: auto;
+      }
+
+      .contract-content h1, .contract-content h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .contract-content p {
+        margin-bottom: 15px;
+        text-align: justify;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="transactions" data-model-id="124:5035">
+      <div class="div">
+        <div class="frame">
+          <div class="frame-wrapper">
+            <div class="frame-2">
+              <div class="text-wrapper">Available Capital</div>
+              <div class="text-wrapper-2">ZMW1,054,200</div>
+            </div>
+          </div>
+        </div>
+        <p class="new-loan"><span class="span">+</span> <span class="text-wrapper-4"> New Loan</span></p>
+        <div class="frame-5">
+
+          <div class="frame-6">
+            <div class="loan-summary-terms-wrapper"><div class="loan-summary-terms">Loan Summary &amp; Terms</div></div>
+            <div class="frame-7">
+              <div class="input-field-2">
+                <div class="frame-8">
+                  <div class="frame-9">
+                    <div class="frame-10">
+                      <div class="text-wrapper-5">Principal</div>
+                      <div class="text-wrapper-6">K {{ summary.get('principal') }}</div>
+                    </div>
+                    <div class="frame-10">
+                      <div class="text-wrapper-5">Recoverable</div>
+                      <div class="text-wrapper-6">K {{ summary.get('recoverable_amount') }}</div>
+                    </div>
+                    <div class="frame-10">
+                      <div class="text-wrapper-5">Interest</div>
+                      <div class="text-wrapper-6">K {{ summary.get('effective_amount') }}</div>
+                    </div>
+                    <div class="frame-10">
+                      <div class="text-wrapper-5">Eff. Rate</div>
+                      <div class="text-wrapper-6">{{ summary.get('effective_rate') }} %</div>
+                    </div>
+                  </div>
+                  <div class="frame-9">
+                    <div class="frame-10">
+                      <div class="text-wrapper-5">Loan Tenure</div>
+                      <div class="text-wrapper-6">{{ summary.get('loan_tenure_days') }} days</div>
+                    </div>
+                    <div class="frame-10">
+                      <div class="text-wrapper-5">Method</div>
+                      <div class="text-wrapper-6">{{ summary.get('method') }}</div>
+                    </div>
+                    <div class="frame-10">
+                      <div class="text-wrapper-5">Instalments</div>
+                      <div class="text-wrapper-6">K {{ summary.get('instalments') }}</div>
+                    </div>
+                    <div class="frame-10">
+                      <div class="text-wrapper-5">Monthly Rate</div>
+                      <div class="text-wrapper-6">{{ summary.get('monthly_interest_rate') }} %</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="frame-11">
+            <div class="frame-12"><div class="text-wrapper-7">Document</div></div>
+            <div class="frame-13">
+              <img class="tick-circle" src="https://c.animaapp.com/eP1QH6Qt/img/tick-circle-1.svg" />
+              <p class="text-wrapper-8">Loan Agreement between Bridgetrust and {{ borrower_info.name if borrower_info else '[name of borrower]' }}</p>
+              <div class="frame-14" onclick="previewContract()"><div class="text-wrapper-9">View</div></div>
+              <div class="frame-14" onclick="downloadContract()"><div class="text-wrapper-9">Download</div></div>
+            </div>
+            <div class="frame-13">
+              <img class="tick-circle" src="https://c.animaapp.com/eP1QH6Qt/img/tick-circle-1.svg" />
+              <div class="text-wrapper-8">Loan Repayment Schedule</div>
+              <div class="frame-14" onclick="previewSchedule()"><div class="text-wrapper-9">View</div></div>
+              <div class="frame-14" onclick="downloadSchedule()"><div class="text-wrapper-9">Download</div></div>
+            </div>
+          </div>
+          <div class="frame-15">
+            <div class="frame-16"><div class="text-wrapper-10">Cancel</div></div>
+            <div class="frame-17"><div class="text-wrapper-11">Submit Application</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for CSV Preview -->
+    <div id="csvModal" class="modal">
+      <div class="modal-content">
+        <span class="close" data-modal="csvModal">&times;</span>
+        <h2>Loan Repayment Schedule</h2>
+        <div id="csvPreview"></div>
+      </div>
+    </div>
+
+    <!-- Modal for Contract Preview -->
+    <div id="contractModal" class="modal">
+      <div class="modal-content">
+        <span class="close" data-modal="contractModal">&times;</span>
+        <h2>Loan Agreement Contract</h2>
+        <div id="contractPreview"></div>
+      </div>
+    </div>
+
+    <script>
+      // Store schedule data from Flask
+      const scheduleData = {{ schedule_data | tojson if schedule_data else '[]' }};
+      const loanParams = {{ loan_params | tojson if loan_params else '{}' }};
+      const loanContract = {{ loan_contract | tojson if loan_contract else 'null' }};
+      const borrowerInfo = {{ borrower_info | tojson if borrower_info else '{}' }};
+
+      // Modal functionality
+      const modals = document.querySelectorAll('.modal');
+      const closeButtons = document.querySelectorAll('.close');
+
+      closeButtons.forEach(closeBtn => {
+        closeBtn.onclick = function() {
+          const modalId = this.getAttribute('data-modal');
+          document.getElementById(modalId).style.display = 'none';
+        }
+      });
+
+      window.onclick = function(event) {
+        modals.forEach(modal => {
+          if (event.target == modal) {
+            modal.style.display = 'none';
+          }
+        });
+      }
+
+      function previewSchedule() {
+        if (!scheduleData || scheduleData.length === 0) {
+          alert('No schedule data available');
+          return;
+        }
+
+        // Create HTML table from schedule data
+        let tableHTML = '<table class="csv-table"><thead><tr>';
+
+        // Create table headers
+        const headers = Object.keys(scheduleData[0]);
+        headers.forEach(header => {
+          tableHTML += `<th>${header.replace(/_/g, ' ').toUpperCase()}</th>`;
+        });
+        tableHTML += '</tr></thead><tbody>';
+
+        // Create table rows
+        scheduleData.forEach(row => {
+          tableHTML += '<tr>';
+          headers.forEach(header => {
+            let value = row[header];
+            // Format numbers if they are numeric
+            if (typeof value === 'number' && !isNaN(value)) {
+              value = value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            }
+            tableHTML += `<td>${value || ''}</td>`;
+          });
+          tableHTML += '</tr>';
+        });
+
+        tableHTML += '</tbody></table>';
+
+        // Display in modal
+        document.getElementById('csvPreview').innerHTML = tableHTML;
+        document.getElementById('csvModal').style.display = 'block';
+      }
+
+      function downloadSchedule() {
+        if (!scheduleData || scheduleData.length === 0) {
+          alert('No schedule data available');
+          return;
+        }
+
+        // Convert data to CSV format
+        const headers = Object.keys(scheduleData[0]);
+        let csvContent = headers.join(',') + '\n';
+
+        scheduleData.forEach(row => {
+          const values = headers.map(header => {
+            let value = row[header];
+            // Handle commas and quotes in values
+            if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+              value = `"${value.replace(/"/g, '""')}"`;
+            }
+            return value || '';
+          });
+          csvContent += values.join(',') + '\n';
+        });
+
+        // Create download link
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+
+        if (link.download !== undefined) {
+          const url = URL.createObjectURL(blob);
+          link.setAttribute('href', url);
+
+          // Generate filename with current date
+          const now = new Date();
+          const timestamp = now.toISOString().slice(0, 19).replace(/[:]/g, '-');
+          const filename = `payment_schedule_${loanParams.method || 'loan'}_${timestamp}.csv`;
+          link.setAttribute('download', filename);
+
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      }
+
+      function previewContract() {
+        if (!loanContract) {
+          alert('No contract data available');
+          return;
+        }
+
+        // Display contract in modal with proper formatting
+        const contractHTML = `<div class="contract-content">${loanContract}</div>`;
+        document.getElementById('contractPreview').innerHTML = contractHTML;
+        document.getElementById('contractModal').style.display = 'block';
+      }
+
+      function downloadContract() {
+        if (!loanContract) {
+          alert('No contract data available');
+          return;
+        }
+
+        // Create download link for contract
+        const blob = new Blob([loanContract], { type: 'text/plain;charset=utf-8;' });
+        const link = document.createElement('a');
+
+        if (link.download !== undefined) {
+          const url = URL.createObjectURL(blob);
+          link.setAttribute('href', url);
+
+          // Generate filename with borrower name and timestamp
+          const now = new Date();
+          const timestamp = now.toISOString().slice(0, 19).replace(/[:]/g, '-');
+          const borrowerName = borrowerInfo.name ? borrowerInfo.name.replace(/\s+/g, '_') : 'borrower';
+          const filename = `loan_contract_${borrowerName}_${timestamp}.txt`;
+          link.setAttribute('download', filename);
+
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      }
+    </script>
+  </body>
+
+{% endblock %}
