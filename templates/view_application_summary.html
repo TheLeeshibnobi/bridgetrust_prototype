@@ -677,152 +677,226 @@
       </div>
     </div>
 
+
+    <!-- Add this form to your HTML, hidden from view -->
+    <form id="loanSubmissionForm" action="/loan_request" method="POST" style="display: none;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+        <input type="hidden" name="borrower_id" id="form_borrower_id">
+        <input type="hidden" name="principal" id="form_principal">
+        <input type="hidden" name="days" id="form_days">
+        <input type="hidden" name="method" id="form_method">
+        <input type="hidden" name="organisation_name" id="form_organisation">
+
+        <!-- Summary fields -->
+        <input type="hidden" name="recoverable_amount" id="form_recoverable">
+        <input type="hidden" name="effective_amount" id="form_effective_amount">
+        <input type="hidden" name="effective_rate" id="form_effective_rate">
+        <input type="hidden" name="instalments" id="form_instalments">
+        <input type="hidden" name="loan_tenure_months" id="form_loan_tenure_months">
+        <input type="hidden" name="monthly_rate" id="form_monthly_rate">
+    </form>
+
     <script>
-      // Store schedule data from Flask
-      const scheduleData = {{ schedule_data | tojson if schedule_data else '[]' }};
-      const loanParams = {{ loan_params | tojson if loan_params else '{}' }};
-      const loanContract = {{ loan_contract | tojson if loan_contract else 'null' }};
-      const borrowerInfo = {{ borrower_info | tojson if borrower_info else '{}' }};
+  // Store schedule data from Flask
+  const scheduleData = {{ schedule_data | tojson if schedule_data else '[]' }};
+  const loanParams = {{ loan_params | tojson if loan_params else '{}' }};
+  const loanContract = {{ loan_contract | tojson if loan_contract else 'null' }};
+  const borrowerInfo = {{ borrower_info | tojson if borrower_info else '{}' }};
+  const summary = {{ summary | tojson if summary else '{}' }};
 
-      // Modal functionality
-      const modals = document.querySelectorAll('.modal');
-      const closeButtons = document.querySelectorAll('.close');
+  // Modal functionality
+  const modals = document.querySelectorAll('.modal');
+  const closeButtons = document.querySelectorAll('.close');
 
-      closeButtons.forEach(closeBtn => {
-        closeBtn.onclick = function() {
-          const modalId = this.getAttribute('data-modal');
-          document.getElementById(modalId).style.display = 'none';
+  closeButtons.forEach(closeBtn => {
+    closeBtn.onclick = function() {
+      const modalId = this.getAttribute('data-modal');
+      document.getElementById(modalId).style.display = 'none';
+    }
+  });
+
+  window.onclick = function(event) {
+    modals.forEach(modal => {
+      if (event.target == modal) {
+        modal.style.display = 'none';
+      }
+    });
+  }
+
+  function previewSchedule() {
+    if (!scheduleData || scheduleData.length === 0) {
+      alert('No schedule data available');
+      return;
+    }
+
+    // Create HTML table from schedule data
+    let tableHTML = '<table class="csv-table"><thead><tr>';
+
+    // Create table headers
+    const headers = Object.keys(scheduleData[0]);
+    headers.forEach(header => {
+      tableHTML += `<th>${header.replace(/_/g, ' ').toUpperCase()}</th>`;
+    });
+    tableHTML += '</tr></thead><tbody>';
+
+    // Create table rows
+    scheduleData.forEach(row => {
+      tableHTML += '<tr>';
+      headers.forEach(header => {
+        let value = row[header];
+        // Format numbers if they are numeric
+        if (typeof value === 'number' && !isNaN(value)) {
+          value = value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
+        tableHTML += `<td>${value || ''}</td>`;
       });
+      tableHTML += '</tr>';
+    });
 
-      window.onclick = function(event) {
-        modals.forEach(modal => {
-          if (event.target == modal) {
-            modal.style.display = 'none';
-          }
-        });
-      }
+    tableHTML += '</tbody></table>';
 
-      function previewSchedule() {
-        if (!scheduleData || scheduleData.length === 0) {
-          alert('No schedule data available');
-          return;
+    // Display in modal
+    document.getElementById('csvPreview').innerHTML = tableHTML;
+    document.getElementById('csvModal').style.display = 'block';
+  }
+
+  function downloadSchedule() {
+    if (!scheduleData || scheduleData.length === 0) {
+      alert('No schedule data available');
+      return;
+    }
+
+    // Convert data to CSV format
+    const headers = Object.keys(scheduleData[0]);
+    let csvContent = headers.join(',') + '\n';
+
+    scheduleData.forEach(row => {
+      const values = headers.map(header => {
+        let value = row[header];
+        // Handle commas and quotes in values
+        if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+          value = `"${value.replace(/"/g, '""')}"`;
         }
+        return value || '';
+      });
+      csvContent += values.join(',') + '\n';
+    });
 
-        // Create HTML table from schedule data
-        let tableHTML = '<table class="csv-table"><thead><tr>';
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
 
-        // Create table headers
-        const headers = Object.keys(scheduleData[0]);
-        headers.forEach(header => {
-          tableHTML += `<th>${header.replace(/_/g, ' ').toUpperCase()}</th>`;
-        });
-        tableHTML += '</tr></thead><tbody>';
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
 
-        // Create table rows
-        scheduleData.forEach(row => {
-          tableHTML += '<tr>';
-          headers.forEach(header => {
-            let value = row[header];
-            // Format numbers if they are numeric
-            if (typeof value === 'number' && !isNaN(value)) {
-              value = value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            }
-            tableHTML += `<td>${value || ''}</td>`;
+      // Generate filename with current date
+      const now = new Date();
+      const timestamp = now.toISOString().slice(0, 19).replace(/[:]/g, '-');
+      const filename = `payment_schedule_${loanParams.method || 'loan'}_${timestamp}.csv`;
+      link.setAttribute('download', filename);
+
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
+  function previewContract() {
+    if (!loanContract) {
+      alert('No contract data available');
+      return;
+    }
+
+    // Display contract in modal with proper formatting
+    const contractHTML = `<div class="contract-content">${loanContract}</div>`;
+    document.getElementById('contractPreview').innerHTML = contractHTML;
+    document.getElementById('contractModal').style.display = 'block';
+  }
+
+  function downloadContract() {
+    if (!loanContract) {
+      alert('No contract data available');
+      return;
+    }
+
+    // Create download link for contract
+    const blob = new Blob([loanContract], { type: 'text/plain;charset=utf-8;' });
+    const link = document.createElement('a');
+
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+
+      // Generate filename with borrower name and timestamp
+      const now = new Date();
+      const timestamp = now.toISOString().slice(0, 19).replace(/[:]/g, '-');
+      const borrowerName = borrowerInfo.name ? borrowerInfo.name.replace(/\s+/g, '_') : 'borrower';
+      const filename = `loan_contract_${borrowerName}_${timestamp}.txt`;
+      link.setAttribute('download', filename);
+
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
+  // Function to populate and submit the hidden form
+  function submitLoanApplicationForm() {
+      console.log('Submit button clicked');
+      console.log('Available data:', { loanParams, borrowerInfo, summary });
+
+      // Populate hidden form fields from the data passed from Flask
+      document.getElementById('form_borrower_id').value = borrowerInfo.id || borrowerInfo.borrower_id;
+      document.getElementById('form_principal').value = loanParams.principal;
+      document.getElementById('form_days').value = loanParams.days;
+      document.getElementById('form_method').value = loanParams.method;
+      document.getElementById('form_organisation').value = borrowerInfo.organisation || loanParams.organisation_name;
+
+      // Use the summary data from Flask template variables
+      document.getElementById('form_recoverable').value = summary.recoverable_amount || '';
+      document.getElementById('form_effective_amount').value = summary.effective_amount || '';
+      document.getElementById('form_effective_rate').value = summary.effective_rate || '';
+      document.getElementById('form_instalments').value = summary.instalments || '';
+      document.getElementById('form_monthly_rate').value = summary.monthly_interest_rate || '';
+
+      // Calculate tenure in months
+      const tenureMonths = Math.round(parseInt(loanParams.days) / 30);
+      document.getElementById('form_loan_tenure_months').value = tenureMonths;
+
+      console.log('Form data being submitted:');
+      console.log('Borrower ID:', document.getElementById('form_borrower_id').value);
+      console.log('Principal:', document.getElementById('form_principal').value);
+      console.log('Days:', document.getElementById('form_days').value);
+      console.log('Method:', document.getElementById('form_method').value);
+      console.log('Organisation:', document.getElementById('form_organisation').value);
+      console.log('Recoverable:', document.getElementById('form_recoverable').value);
+      console.log('Effective Amount:', document.getElementById('form_effective_amount').value);
+      console.log('Effective Rate:', document.getElementById('form_effective_rate').value);
+      console.log('Instalments:', document.getElementById('form_instalments').value);
+      console.log('Monthly Rate:', document.getElementById('form_monthly_rate').value);
+      console.log('Tenure Months:', document.getElementById('form_loan_tenure_months').value);
+
+      // Submit the form
+      document.getElementById('loanSubmissionForm').submit();
+  }
+
+  // Update the submit button click event
+  document.addEventListener('DOMContentLoaded', function() {
+      const submitButton = document.querySelector('.frame-17');
+      if (submitButton) {
+          console.log('Submit button found, adding event listener');
+          submitButton.addEventListener('click', function(e) {
+              e.preventDefault();
+              submitLoanApplicationForm();
           });
-          tableHTML += '</tr>';
-        });
-
-        tableHTML += '</tbody></table>';
-
-        // Display in modal
-        document.getElementById('csvPreview').innerHTML = tableHTML;
-        document.getElementById('csvModal').style.display = 'block';
+      } else {
+          console.error('Submit button not found');
       }
-
-      function downloadSchedule() {
-        if (!scheduleData || scheduleData.length === 0) {
-          alert('No schedule data available');
-          return;
-        }
-
-        // Convert data to CSV format
-        const headers = Object.keys(scheduleData[0]);
-        let csvContent = headers.join(',') + '\n';
-
-        scheduleData.forEach(row => {
-          const values = headers.map(header => {
-            let value = row[header];
-            // Handle commas and quotes in values
-            if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
-              value = `"${value.replace(/"/g, '""')}"`;
-            }
-            return value || '';
-          });
-          csvContent += values.join(',') + '\n';
-        });
-
-        // Create download link
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-
-        if (link.download !== undefined) {
-          const url = URL.createObjectURL(blob);
-          link.setAttribute('href', url);
-
-          // Generate filename with current date
-          const now = new Date();
-          const timestamp = now.toISOString().slice(0, 19).replace(/[:]/g, '-');
-          const filename = `payment_schedule_${loanParams.method || 'loan'}_${timestamp}.csv`;
-          link.setAttribute('download', filename);
-
-          link.style.visibility = 'hidden';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
-      }
-
-      function previewContract() {
-        if (!loanContract) {
-          alert('No contract data available');
-          return;
-        }
-
-        // Display contract in modal with proper formatting
-        const contractHTML = `<div class="contract-content">${loanContract}</div>`;
-        document.getElementById('contractPreview').innerHTML = contractHTML;
-        document.getElementById('contractModal').style.display = 'block';
-      }
-
-      function downloadContract() {
-        if (!loanContract) {
-          alert('No contract data available');
-          return;
-        }
-
-        // Create download link for contract
-        const blob = new Blob([loanContract], { type: 'text/plain;charset=utf-8;' });
-        const link = document.createElement('a');
-
-        if (link.download !== undefined) {
-          const url = URL.createObjectURL(blob);
-          link.setAttribute('href', url);
-
-          // Generate filename with borrower name and timestamp
-          const now = new Date();
-          const timestamp = now.toISOString().slice(0, 19).replace(/[:]/g, '-');
-          const borrowerName = borrowerInfo.name ? borrowerInfo.name.replace(/\s+/g, '_') : 'borrower';
-          const filename = `loan_contract_${borrowerName}_${timestamp}.txt`;
-          link.setAttribute('download', filename);
-
-          link.style.visibility = 'hidden';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
-      }
-    </script>
+  });
+</script>
   </body>
 
 {% endblock %}

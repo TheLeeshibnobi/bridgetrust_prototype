@@ -1,4 +1,5 @@
 import textwrap
+import uuid
 from http.client import responses
 
 import bcrypt
@@ -178,7 +179,6 @@ class Loans:
                 interest = loan['interest_rate']
                 issue_date = loan.get('created_at', '')[:10]
 
-
                 # Get borrower name
                 borrower_response = (
                     self.supabase
@@ -196,7 +196,7 @@ class Loans:
                 repayment_response = (
                     self.supabase
                     .table('loan_repayments')
-                    .select('payment_amount', 'balance')
+                    .select('payment_amount, balance')
                     .eq('loan_id', loan_id)
                     .execute()
                 )
@@ -251,7 +251,6 @@ class Loans:
             print(f'[active_organisational_borrowers] Exception: {e}')
             return 0
 
-
     def get_borrower_by_loan(self, loan_id):
         """gets the borrower info using the loan id"""
         try:
@@ -292,7 +291,6 @@ class Loans:
             borrower['organisation'] = organisation_name
 
             return borrower
-
 
         except Exception as e:
             print(f'[active_organisational_borrowers] Exception: {e}')
@@ -601,7 +599,8 @@ class Loans:
     def store_effective_rate(self, loan_id, principal, days, method='amortisation'):
         """
         Calculates and stores the monthly rate and projected total interest amount
-        for a given loan in the database using the specified method.
+        for a given loan in the database using the specified method. Should only be called
+        when a loan is approved, not during submission.
         """
         try:
             # Convert parameters to appropriate types
@@ -625,6 +624,7 @@ class Loans:
                 }
 
             data = {
+                'id': str(uuid.uuid4()),
                 'loan_id': loan_id,
                 'effective_interest': result['monthly_rate'],  # This is the monthly rate used
                 'effective_amount': result['total_interest'],  # Projected total interest
@@ -979,10 +979,263 @@ class Loans:
                 'contract_content': None
             }
 
+    def upload_loan_files(self, contract_content, payment_schedule_df, borrower_name, loan_id=None):
+        """
+        Uploads the loan contract and payment schedule to the supabase bucket called loan-files
+        and returns the URLs which will be inserted in the loan_files table
 
+        Args:
+            contract_content (str): The generated contract content
+            payment_schedule_df (pd.DataFrame): The payment schedule dataframe
+            borrower_name (str): Name of the borrower for file naming
+            loan_id (str, optional): Loan ID for file naming, if available
 
-test = Loans()
+        Returns:
+            dict: Contains status, message, and URLs for both files
+        """
+        try:
+            # Generate unique filenames with timestamp
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            safe_borrower_name = "".join(c for c in borrower_name if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            safe_borrower_name = safe_borrower_name.replace(' ', '_')
 
-print(
-    test.verify_borrower('123456/12/1','ee8278fc-66e6-4a0f-a6bb-3525657f98b8')
-)
+            # Create filenames
+            if loan_id:
+                contract_filename = f"loan_contract_{loan_id}_{safe_borrower_name}_{timestamp}.txt"
+                schedule_filename = f"payment_schedule_{loan_id}_{safe_borrower_name}_{timestamp}.csv"
+            else:
+                contract_filename = f"loan_contract_{safe_borrower_name}_{timestamp}.txt"
+                schedule_filename = f"payment_schedule_{safe_borrower_name}_{timestamp}.csv"
+
+            # Convert payment schedule DataFrame to CSV string
+            csv_content = payment_schedule_df.to_csv(index=False)
+
+            # Upload contract file
+            contract_response = self.supabase.storage.from_("loan-files").upload(
+                path=contract_filename,
+                file=contract_content.encode('utf-8'),
+                file_options={"content-type": "text/plain"}
+            )
+
+            if hasattr(contract_response, 'error') and contract_response.error:
+                return {
+                    'status': False,
+                    'message': f'Failed to upload contract: {contract_response.error}',
+                    'contract_url': None,
+                    'schedule_url': None
+                }
+
+            # Upload payment schedule file
+            schedule_response = self.supabase.storage.from_("loan-files").upload(
+                path=schedule_filename,
+                file=csv_content.encode('utf-8'),
+                file_options={"content-type": "text/csv"}
+            )
+
+            if hasattr(schedule_response, 'error') and schedule_response.error:
+                # If schedule upload fails, try to clean up the contract file
+                try:
+                    self.supabase.storage.from_("loan-files").remove([contract_filename])
+                except:
+                    pass  # Don't fail if cleanup fails
+
+                return {
+                    'status': False,
+                    'message': f'Failed to upload payment schedule: {schedule_response.error}',
+                    'contract_url': None,
+                    'schedule_url': None
+                }
+
+            # Get public URLs for the uploaded files
+            contract_url = self.supabase.storage.from_("loan-files").get_public_url(contract_filename)
+            schedule_url = self.supabase.storage.from_("loan-files").get_public_url(schedule_filename)
+
+            return {
+                'status': True,
+                'message': 'Files uploaded successfully',
+                'contract_url': contract_url,
+                'schedule_url': schedule_url,
+                'contract_filename': contract_filename,
+                'schedule_filename': schedule_filename
+            }
+
+        except Exception as e:
+            print(f'Exception in upload_loan_files: {e}')
+            return {
+                'status': False,
+                'message': f'Error uploading files: {str(e)}',
+                'contract_url': None,
+                'schedule_url': None
+            }
+
+    def update_loan_files_table(self, borrower_id, loan_agreement_url, payment_schedule_url):
+        """Uploads the loan agreement and payment schedule url to the loan_files table"""
+        try:
+            # Build the loan request data
+            data = {
+                'loan_agreement' : loan_agreement_url,
+                'payment_schedule' : payment_schedule_url,
+                'borrower_id' : borrower_id
+            }
+
+            response = self.supabase.table('loan_files').insert(data).execute()
+            return response.data
+
+        except Exception as e:
+            print(f'Exception: {e}')
+            return None
+
+    def upload_and_store_loan_files(self, contract_content, payment_schedule_df, borrower_name, borrower_id,
+                                    loan_id=None):
+        try:
+            # Debug: List buckets to verify loan-files exists
+            bucket_list = self.supabase.storage.list_buckets()
+            print(f"Available buckets: {[bucket.name for bucket in bucket_list]}")
+
+            # Generate unique filenames with timestamp
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            safe_borrower_name = "".join(c for c in borrower_name if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            safe_borrower_name = safe_borrower_name.replace(' ', '_')
+
+            # Create filenames
+            if loan_id:
+                contract_filename = f"loan_contract_{loan_id}_{safe_borrower_name}_{timestamp}.txt"
+                schedule_filename = f"payment_schedule_{loan_id}_{safe_borrower_name}_{timestamp}.csv"
+            else:
+                contract_filename = f"loan_contract_{safe_borrower_name}_{timestamp}.txt"
+                schedule_filename = f"payment_schedule_{safe_borrower_name}_{timestamp}.csv"
+
+            # Convert payment schedule DataFrame to CSV string
+            csv_content = payment_schedule_df.to_csv(index=False)
+
+            # Upload contract file
+            contract_response = self.supabase.storage.from_("loan-files").upload(
+                path=contract_filename,
+                file=contract_content.encode('utf-8'),
+                file_options={"content-type": "text/plain"}
+            )
+
+            if hasattr(contract_response, 'error') and contract_response.error:
+                return {
+                    'status': False,
+                    'message': f'Failed to upload contract: {contract_response.error.message}',
+                    'contract_url': None,
+                    'schedule_url': None,
+                    'loan_file_id': None
+                }
+
+            # Upload payment schedule file
+            schedule_response = self.supabase.storage.from_("loan-files").upload(
+                path=schedule_filename,
+                file=csv_content.encode('utf-8'),
+                file_options={"content-type": "text/csv"}
+            )
+
+            if hasattr(schedule_response, 'error') and schedule_response.error:
+                # Clean up contract file if schedule upload fails
+                try:
+                    self.supabase.storage.from_("loan-files").remove([contract_filename])
+                except Exception as e:
+                    print(f"Cleanup error: {e}")
+                return {
+                    'status': False,
+                    'message': f'Failed to upload payment schedule: {schedule_response.error.message}',
+                    'contract_url': None,
+                    'schedule_url': None,
+                    'loan_file_id': None
+                }
+
+            # Get public URLs for the uploaded files
+            contract_url = self.supabase.storage.from_("loan-files").get_public_url(contract_filename)
+            schedule_url = self.supabase.storage.from_("loan-files").get_public_url(schedule_filename)
+
+            # Store URLs in loan_files table
+            loan_files_data = {
+                'loan_agreement': contract_url,
+                'payment_schedule': schedule_url,
+                'borrower_id': borrower_id
+            }
+
+            db_response = self.supabase.table('loan_files').insert(loan_files_data).execute()
+
+            if not db_response.data:
+                # Clean up uploaded files if database insert fails
+                try:
+                    self.supabase.storage.from_("loan-files").remove([contract_filename, schedule_filename])
+                except Exception as e:
+                    print(f"Cleanup error: {e}")
+                return {
+                    'status': False,
+                    'message': 'Failed to save loan files to database',
+                    'contract_url': None,
+                    'schedule_url': None,
+                    'loan_file_id': None
+                }
+
+            loan_file_id = db_response.data[0]['id']
+
+            return {
+                'status': True,
+                'message': 'Files uploaded and stored successfully',
+                'contract_url': contract_url,
+                'schedule_url': schedule_url,
+                'loan_file_id': loan_file_id,
+                'contract_filename': contract_filename,
+                'schedule_filename': schedule_filename,
+                'db_record': db_response.data[0]
+            }
+
+        except Exception as e:
+            print(f'Exception in upload_and_store_loan_files: {e}')
+            # Attempt cleanup if files were uploaded
+            if 'contract_filename' in locals() or 'schedule_filename' in locals():
+                try:
+                    files_to_remove = []
+                    if 'contract_filename' in locals():
+                        files_to_remove.append(contract_filename)
+                    if 'schedule_filename' in locals():
+                        files_to_remove.append(schedule_filename)
+                    if files_to_remove:
+                        self.supabase.storage.from_("loan-files").remove(files_to_remove)
+                except Exception as cleanup_error:
+                    print(f"Cleanup error: {cleanup_error}")
+            return {
+                'status': False,
+                'message': f'Error uploading and storing files: {str(e)}',
+                'contract_url': None,
+                'schedule_url': None,
+                'loan_file_id': None
+            }
+
+    def upload_loan_request(self, loan_summary, user_id, borrower_id, loan_file_id):
+        """Uploads the loan request. Does not store effective rate; call store_effective_rate separately post-approval."""
+
+        try:
+            # Build the loan request data
+            data = {
+                'id': str(uuid.uuid4()),  # Generate a new UUID for the id field
+                'principal': loan_summary.get('principal'),
+                'interest': loan_summary.get('monthly_interest_rate'),
+                'total_payable': loan_summary.get('recoverable_amount'),
+                'start_date': datetime.today().isoformat(),
+                'end_date': (datetime.today() + timedelta(days=loan_summary.get('loan_tenure_days', 0))).isoformat(),
+                'method': loan_summary.get('method'),
+                'tenure': loan_summary.get('loan_tenure_days'),
+                'months_tenure': loan_summary.get('loan_tenure_months'),
+                'status': 'pending',
+                'user_id': user_id,
+                'borrower_id': borrower_id,
+                'loan_file_id': loan_file_id
+            }
+
+            # Ensure critical fields aren't missing
+            if not data['principal'] or not data['total_payable']:
+                print('Missing critical loan data')
+                return None
+
+            response = self.supabase.table('loan_requests').insert(data).execute()
+            return response.data
+
+        except Exception as e:
+            print(f'Exception: {e}')
+            return None

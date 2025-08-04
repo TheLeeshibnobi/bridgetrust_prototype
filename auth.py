@@ -59,11 +59,10 @@ class UserAuthentication:
 
     def login(self, email, password):
         """Logs the user into the platform and returns user_type on success"""
-
         try:
-            # Fetch user record including user_type
+            # Fetch user record including ALL needed fields - FIXED: Added id and user_name
             user_response = self.supabase.table('users') \
-                .select('email, password, user_type') \
+                .select('id, email, password, user_type, user_name') \
                 .eq('email', email) \
                 .execute()
 
@@ -80,10 +79,13 @@ class UserAuthentication:
                 print('Invalid password')
                 return {'error': 'Invalid password'}
 
-            # Login successful
+            # Login successful - FIXED: Now returning all needed user info
             return {
                 'success': True,
-                'user_type': user['user_type']
+                'user_type': user['user_type'],
+                'user_id': user['id'],  # ADDED: Return user_id
+                'user_name': user['user_name'],  # ADDED: Return user_name
+                'email': user['email']  # ADDED: Return email for consistency
             }
 
         except Exception as e:

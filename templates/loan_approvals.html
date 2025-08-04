@@ -1,0 +1,603 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <style>
+      @import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+      @import url("https://fonts.googleapis.com/css?family=IBM+Plex+Sans+Devanagari:400,600");
+
+      * {
+        -webkit-font-smoothing: antialiased;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0px;
+        height: 100%;
+      }
+
+      button:focus-visible {
+        outline: 2px solid #4a90e2 !important;
+        outline: -webkit-focus-ring-color auto 5px !important;
+      }
+
+      a {
+        text-decoration: none;
+      }
+
+      .loan-approvals {
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .loan-approvals .div {
+        background-color: #ffffff;
+        width: 1423px;
+        height: 780px;
+        position: relative;
+      }
+
+      .loan-approvals .frame {
+        display: flex;
+        width: 1423px;
+        height: 59px;
+        align-items: center;
+        justify-content: center;
+        gap: 112px;
+        padding: 8px 52px 8px 45px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: #f8fbfc;
+        border-bottom-width: 3px;
+        border-bottom-style: solid;
+        border-color: #f9393a;
+      }
+
+      .loan-approvals .frame-wrapper {
+        display: flex;
+        width: 448px;
+        align-items: center;
+        position: relative;
+      }
+
+      .loan-approvals .div-wrapper {
+        display: flex;
+        flex-direction: column;
+        width: 409px;
+        align-items: flex-start;
+        gap: 2px;
+        position: relative;
+      }
+
+      .loan-approvals .text-wrapper {
+        position: relative;
+        align-self: stretch;
+        margin-top: -1.00px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 20px;
+        text-align: center;
+        letter-spacing: 0;
+        line-height: 20px;
+      }
+
+      .loan-approvals .frame-2 {
+        display: flex;
+        flex-direction: column;
+        width: 1171px;
+        align-items: flex-start;
+        gap: 12px;
+        position: absolute;
+        top: 83px;
+        left: 126px;
+      }
+
+      .loan-approvals .frame-3 {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        flex: 0 0 auto;
+      }
+
+      .loan-approvals .frame-4 {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 4px 16px;
+        position: relative;
+        flex: 0 0 auto;
+        background-color: #f5f4f6;
+        border-radius: 50px;
+      }
+
+      .loan-approvals .text-wrapper-2 {
+        position: relative;
+        width: fit-content;
+        margin-top: -1.00px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 12px;
+        text-align: center;
+        letter-spacing: 0;
+        line-height: 24px;
+        white-space: nowrap;
+      }
+
+      .loan-approvals .frame-5 {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 4px 16px;
+        position: relative;
+        flex: 0 0 auto;
+        border-radius: 50px;
+      }
+
+      .loan-approvals .text-wrapper-3 {
+        position: relative;
+        width: fit-content;
+        margin-top: -1.00px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #333333;
+        font-size: 12px;
+        text-align: center;
+        letter-spacing: 0;
+        line-height: 24px;
+        white-space: nowrap;
+      }
+
+      .loan-approvals .frame-6 {
+        display: flex;
+        flex-direction: column;
+        height: 578px;
+        align-items: flex-start;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        background-color: #ffffff;
+        border-radius: 5px;
+        overflow: hidden;
+        border: 1px solid;
+        border-color: #e1e3e3;
+      }
+
+      .loan-approvals .frame-7 {
+        display: flex;
+        height: 37px;
+        align-items: center;
+        gap: 28px;
+        padding: 8px 24px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        background-color: #f6f8f9;
+        border: 1px solid;
+        border-color: #e1e3e3;
+      }
+
+      .loan-approvals .frame-8 {
+        display: inline-flex;
+        align-items: center;
+        gap: 34px;
+        position: relative;
+        flex: 0 0 auto;
+        margin-top: -9.50px;
+        margin-bottom: -9.50px;
+      }
+
+      .loan-approvals .frame-9 {
+        display: flex;
+        flex-direction: column;
+        width: 141.5px;
+        height: 20px;
+        align-items: flex-start;
+        gap: 2px;
+        position: relative;
+      }
+
+      .loan-approvals .text-wrapper-4 {
+        position: relative;
+        align-self: stretch;
+        margin-top: -1.00px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 12px;
+        letter-spacing: 0;
+        line-height: 20px;
+      }
+
+      .loan-approvals .text-wrapper-5 {
+        position: relative;
+        align-self: stretch;
+        margin-top: -1.00px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 12px;
+        text-align: center;
+        letter-spacing: 0;
+        line-height: 20px;
+      }
+
+      .loan-approvals .frame-10 {
+        display: flex;
+        width: 141.5px;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        position: relative;
+      }
+
+      .loan-approvals .text-wrapper-6 {
+        position: relative;
+        flex: 1;
+        margin-top: -1.00px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 12px;
+        text-align: center;
+        letter-spacing: 0;
+        line-height: 40px;
+      }
+
+      .loan-approvals .frame-11 {
+        position: relative;
+        flex: 1;
+        flex-grow: 1;
+        height: 40px;
+        margin-top: -9.50px;
+        margin-bottom: -9.50px;
+      }
+
+      .loan-approvals .frame-12 {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 4px 24px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        flex: 0 0 auto;
+        margin-top: -1px;
+        border: 1px solid;
+        border-color: #e1e3e3;
+      }
+
+      .loan-approvals .frame-13 {
+        display: inline-flex;
+        align-items: center;
+        gap: 34px;
+        position: relative;
+        flex: 0 0 auto;
+      }
+
+      .loan-approvals .text-wrapper-7 {
+        position: relative;
+        align-self: stretch;
+        margin-top: -1.00px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #000000;
+        font-size: 12px;
+        letter-spacing: 0;
+        line-height: 20px;
+      }
+
+      .loan-approvals .text-wrapper-8 {
+        position: relative;
+        align-self: stretch;
+        margin-top: -1.00px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #000000;
+        font-size: 12px;
+        text-align: center;
+        letter-spacing: 0;
+        line-height: 20px;
+      }
+
+      .loan-approvals .text-wrapper-9 {
+        position: relative;
+        flex: 1;
+        margin-top: -1.00px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #000000;
+        font-size: 12px;
+        text-align: center;
+        letter-spacing: 0;
+        line-height: 40px;
+      }
+
+      .loan-approvals .frame-14 {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 24px;
+        position: relative;
+        flex: 0 0 auto;
+        margin-right: -14.00px;
+      }
+
+      .loan-approvals .arrow-up {
+        position: relative;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+      }
+
+      .loan-approvals .arrow-up.expanded {
+        transform: rotate(180deg);
+      }
+
+      .loan-approvals .tick-square {
+        position: relative;
+        width: 24px;
+        height: 24px;
+      }
+
+      .loan-approvals .vuesax-linear-close {
+        position: relative;
+        width: 24px;
+        height: 24px;
+        background-image: url(https://c.animaapp.com/ZwvL7uO1/img/close-square.png);
+        background-size: 100% 100%;
+      }
+
+      .loan-approvals .expanded-details {
+        display: none;
+        background-color: #f8f9fa;
+        border-top: 1px solid #e1e3e3;
+        padding: 24px;
+        margin: 0 -24px -4px -24px;
+      }
+
+      .loan-approvals .expanded-details.show {
+        display: block;
+        animation: slideDown 0.3s ease-out;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          max-height: 0;
+        }
+        to {
+          opacity: 1;
+          max-height: 300px;
+        }
+      }
+
+      .loan-approvals .borrower-header {
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #666666;
+        font-size: 12px;
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .loan-approvals .borrower-name {
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 16px;
+        margin-bottom: 24px;
+      }
+
+      .loan-approvals .details-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 32px;
+      }
+
+      .loan-approvals .detail-item {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .loan-approvals .detail-label {
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #666666;
+        font-size: 10px;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .loan-approvals .detail-value {
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .loan-approvals .view-details-btn {
+        position: absolute;
+        bottom: 16px;
+        right: 24px;
+        background: none;
+        border: none;
+        color: #666666;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-size: 12px;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      .loan-approvals .frame-12 {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding: 4px 24px;
+        position: relative;
+        align-self: stretch;
+        width: 100%;
+        flex: 0 0 auto;
+        margin-top: -1px;
+        border: 1px solid;
+        border-color: #e1e3e3;
+      }
+
+      .loan-approvals .row-content {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loan-approvals" data-model-id="214:6351">
+      <div class="div">
+        <div class="frame">
+          <div class="frame-wrapper">
+            <div class="div-wrapper"><div class="text-wrapper">Loan Approvals</div></div>
+          </div>
+        </div>
+        <div class="frame-2">
+          <div class="frame-3">
+            <div class="frame-4"><div class="text-wrapper-2">Pending</div></div>
+            <div class="frame-5"><div class="text-wrapper-3">Accepted</div></div>
+            <div class="frame-5"><div class="text-wrapper-3">Rejected</div></div>
+          </div>
+          <div class="frame-6">
+            <div class="frame-7">
+              <div class="frame-8">
+                <div class="frame-9"><div class="text-wrapper-4">Issue Date</div></div>
+                <div class="frame-9"><div class="text-wrapper-4">Name</div></div>
+                <div class="frame-9"><div class="text-wrapper-5">Institution</div></div>
+                <div class="frame-10"><div class="text-wrapper-6">Principal</div></div>
+                <div class="frame-10"><div class="text-wrapper-6">Interest</div></div>
+                <div class="frame-10"><div class="text-wrapper-6">Recovery Amt.</div></div>
+              </div>
+              <div class="frame-11"></div>
+            </div>
+            <div class="frame-12">
+              <div class="row-content">
+                <div class="frame-13">
+                  <div class="frame-9"><div class="text-wrapper-7">28/05/2025</div></div>
+                  <div class="frame-9"><div class="text-wrapper-7">Stephen Kapambwe</div></div>
+                  <div class="frame-9"><div class="text-wrapper-8">CBU-Main Campus</div></div>
+                  <div class="frame-10"><div class="text-wrapper-9">K5,000</div></div>
+                  <div class="frame-10"><div class="text-wrapper-9">K1,500</div></div>
+                  <div class="frame-10"><div class="text-wrapper-9">K6,500</div></div>
+                </div>
+                <div class="frame-14">
+                  <img class="arrow-up" src="https://c.animaapp.com/ZwvL7uO1/img/arrow-up.svg" onclick="toggleDetails()" />
+                  <div class="frame-3">
+                    <img class="tick-square" src="https://c.animaapp.com/ZwvL7uO1/img/tick-square.svg" />
+                    <div class="vuesax-linear-close"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="expanded-details" id="expandedDetails">
+                <div class="borrower-header">Borrower Details</div>
+                <div class="borrower-name">Stephen Kapambwe</div>
+
+                <div class="details-grid">
+                  <div class="detail-item">
+                    <div class="detail-label">Loan Amount</div>
+                    <div class="detail-value">5,000</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">Payment Plan</div>
+                    <div class="detail-value">ZMW 350</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">Home Address</div>
+                    <div class="detail-value">414 Chilangwe Road</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">Name of Next of Kin</div>
+                    <div class="detail-value">Sandra Banda</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">Percentage Interest rate</div>
+                    <div class="detail-value">45%</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">Payment Duration</div>
+                    <div class="detail-value">8 Months</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">Email Address</div>
+                    <div class="detail-value">jamesbanda101@gmail.com</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">Relationship</div>
+                    <div class="detail-value">Wife</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">Date Loan Approved</div>
+                    <div class="detail-value">28/02/2025</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">Any Payments Remaining</div>
+                    <div class="detail-value">N/A</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">Phone Number</div>
+                    <div class="detail-value">+260712010246</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">Phone Number</div>
+                    <div class="detail-value">+260586940021</div>
+                  </div>
+                </div>
+
+                <button class="view-details-btn">View Details</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      function toggleDetails() {
+        const expandedDetails = document.getElementById('expandedDetails');
+        const arrow = document.querySelector('.arrow-up');
+
+        if (expandedDetails.classList.contains('show')) {
+          expandedDetails.classList.remove('show');
+          arrow.classList.remove('expanded');
+        } else {
+          expandedDetails.classList.add('show');
+          arrow.classList.add('expanded');
+        }
+      }
+    </script>
+  </body>
+{% endblock %}

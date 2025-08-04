@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <style>
+    @import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+    @import url("https://fonts.googleapis.com/css?family=IBM+Plex+Sans+Devanagari:500,400,300");
+
+    * {
+      -webkit-font-smoothing: antialiased;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0px;
+      height: 100%;
+    }
+
+    /* a blue color as a generic focus style */
+    button:focus-visible {
+      outline: 2px solid #4a90e2 !important;
+      outline: -webkit-focus-ring-color auto 5px !important;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    .transactions {
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .transactions .frame-wrapper {
+      background-color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 1440px;
+      min-height: 100vh;
+    }
+
+    .transactions .frame {
+      position: relative;
+      width: 472px;
+      height: 410px;
+      background-color: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid;
+      border-color: #c9ccce;
+      box-shadow: 0px 4px 4px #00000040;
+    }
+
+    .transactions .text-wrapper {
+      position: absolute;
+      top: 217px;
+      left: 149px;
+      font-family: "IBM Plex Sans Devanagari", Helvetica;
+      font-weight: 500;
+      color: #000000;
+      font-size: 24px;
+      letter-spacing: 0;
+      line-height: normal;
+    }
+
+    .transactions .the-loan-application {
+      position: absolute;
+      width: 437px;
+      top: 254px;
+      left: 18px;
+      font-family: "IBM Plex Sans Devanagari", Helvetica;
+      font-weight: 300;
+      color: #000000;
+      font-size: 16px;
+      text-align: center;
+      letter-spacing: 0;
+      line-height: normal;
+    }
+
+    .transactions .vuesax-bold-verify {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      top: 76px;
+      left: 176px;
+    }
+
+    .transactions .div-wrapper {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 4px 36px;
+      position: absolute;
+      top: 315px;
+      left: 181px;
+      border-radius: 4px;
+      border: 1px solid;
+      border-color: #001a28;
+      cursor: pointer;
+    }
+
+    .transactions .div {
+      position: relative;
+      width: fit-content;
+      margin-top: -1.00px;
+      font-family: "IBM Plex Sans Devanagari", Helvetica;
+      font-weight: 400;
+      color: #001a28;
+      font-size: 16px;
+      letter-spacing: 0;
+      line-height: normal;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .transactions .frame {
+        width: 90%;
+        max-width: 472px;
+        margin: 0 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="transactions" data-model-id="214:6295">
+    <div class="frame-wrapper">
+      <div class="frame">
+        <div class="text-wrapper">Congratulations</div>
+        <p class="the-loan-application">
+          The Loan Application has successfully been submitted.
+        </p>
+        <img class="vuesax-bold-verify" src="https://c.animaapp.com/jUgIjZUj/img/vuesax-bold-verify.svg" />
+        <div class="div-wrapper"><div class="div">Close</div></div>
+      </div>
+    </div>
+  </div>
+</body>
+
+
+{% endblock %}

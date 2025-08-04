@@ -640,6 +640,14 @@
         border-radius: 6px;
         border: 1px solid #e2e4e8;
         flex-shrink: 0;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .notification:hover {
+        background-color: #f8f9fa;
+        border-color: #003049;
+        box-shadow: 0 2px 8px rgba(0, 48, 73, 0.1);
     }
 
     .notification-content {
@@ -680,8 +688,8 @@
     .notification-description {
         font-weight: 400;
         color: #000000;
-        font-size: 10px;
-        line-height: 13px;
+        font-size: 12px;
+        line-height: 15px;
         margin: 0;
     }
 
@@ -905,88 +913,36 @@
                 </div>
 
                 <div class="notifications-list">
-                    <article class="notification">
-                        <div class="notification-content">
-                            <svg class="notification-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M8 1L10 6H6L8 1ZM8 15L6 10H10L8 15Z" fill="#4CAF50"/>
-                            </svg>
-                            <div class="notification-body">
-                                <div class="notification-header">
-                                    <div class="notification-text">
-                                        <h3 class="notification-title">Automated Balance Recovery initiated</h3>
-                                        <p class="notification-description">
-                                            120 Reminder Alerts have been sent to the customers that still have balances. Click below to view the details.
-                                        </p>
+                    {% for notification in notifications[:3] %}
+                    <a href="#" data-notification-id="{{ notification.id }}" data-borrower-id="{{ notification.borrower_id }}" data-user-id="{{ notification.user_id }}" data-request-id="{{ notification.request_id }}" data-created-at="{{ notification.created_at }}" style="text-decoration: none; color: inherit;">
+                        <article class="notification">
+                            <div class="notification-content">
+                                <svg class="notification-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="8" cy="8" r="7" fill="none" stroke="#FF9800" stroke-width="1"/>
+                                    <path d="M8 4V8L10 10" stroke="#FF9800" stroke-width="1" stroke-linecap="round"/>
+                                </svg>
+                                <div class="notification-body">
+                                    <div class="notification-header">
+                                        <div class="notification-text">
+                                            <p class="notification-description">
+                                                {{ notification.notification | replace('\n', '<br>') | safe }}
+                                            </p>
+                                        </div>
+                                        <button class="close-btn" aria-label="Close notification" onclick="event.preventDefault(); event.stopPropagation();">
+                                            <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M9 3L3 9M3 3L9 9" stroke="#000" stroke-width="1" stroke-linecap="round"/>
+                                            </svg>
+                                        </button>
                                     </div>
-                                    <button class="close-btn" aria-label="Close notification">
-                                        <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M9 3L3 9M3 3L9 9" stroke="#000" stroke-width="1" stroke-linecap="round"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div class="notification-action">
-                                    <button class="action-btn">View Recovery Details</button>
                                 </div>
                             </div>
-                        </div>
-                    </article>
+                        </article>
+                    </a>
+                    {% endfor %}
+                </div>
 
-                    <article class="notification">
-                        <div class="notification-content">
-                            <svg class="notification-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="8" cy="8" r="7" fill="none" stroke="#FF9800" stroke-width="1"/>
-                                <path d="M8 4V8L10 10" stroke="#FF9800" stroke-width="1" stroke-linecap="round"/>
-                            </svg>
-                            <div class="notification-body">
-                                <div class="notification-header">
-                                    <div class="notification-text">
-                                        <h3 class="notification-title">Balances Alert!</h3>
-                                        <p class="notification-description">
-                                            Many parents haven't adhered to school payment policy's. Click the button below to follow up the issue.
-                                        </p>
-                                    </div>
-                                    <button class="close-btn" aria-label="Close notification">
-                                        <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M9 3L3 9M3 3L9 9" stroke="#000" stroke-width="1" stroke-linecap="round"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div class="notification-action">
-                                    <button class="action-btn">Follow up</button>
-                                </div>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="notification">
-                    <div class="notification-content">
-                        <svg class="notification-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="8" cy="8" r="7" fill="none" stroke="#FF9800" stroke-width="1"/>
-                            <path d="M8 4V8L10 10" stroke="#FF9800" stroke-width="1" stroke-linecap="round"/>
-                        </svg>
-                        <div class="notification-body">
-                            <div class="notification-header">
-                                <div class="notification-text">
-                                    <h3 class="notification-title">Balances Alert!</h3>
-                                    <p class="notification-description">
-                                        Many parents haven't adhered to school payment policy's. Click the button below to follow up the issue.
-                                    </p>
-                                </div>
-                                <button class="close-btn" aria-label="Close notification">
-                                    <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M9 3L3 9M3 3L9 9" stroke="#000" stroke-width="1" stroke-linecap="round"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="notification-action">
-                                <button class="action-btn">Follow up</button>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-            </div>
-        </aside>
+            </aside>
+        </div>
     </div>
-</div>
 </body>
 {% endblock %}

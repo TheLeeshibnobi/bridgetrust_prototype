@@ -18,6 +18,7 @@ from home import Home
 from loans import Loans
 from organisations import Organisations
 from borrowers import Borrowers
+from notifications import Notifications
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY') or 'fallback-secret-key-for-development'
@@ -95,9 +96,11 @@ def login():
             flash(response['error'], 'error')
             return redirect(url_for('login'))
 
-        # Store user info in session
+        # Store user info in session - FIXED: Now storing user_id
         session['user_type'] = response['user_type']
         session['email'] = email
+        session['user_id'] = response.get('user_id')  # Make sure to get user_id from response
+        session['user_name'] = response.get('user_name')  # Also store user_name if available
 
         flash('Login successful!', 'success')
         return redirect(url_for('home'))
@@ -116,14 +119,17 @@ def home():
         return redirect(url_for('login'))
 
     home_manager = Home()
+    notification_manager = Notifications()
     total_principal_given = home_manager.total_principal_given()
     interest_earned = home_manager.interest_earned()
     total_receivables = home_manager.total_receivables()
+    notifications = notification_manager.load_notifications()
 
     return render_template('home.html',
                            total_principal_given=total_principal_given,
                            interest_earned=interest_earned,
-                           total_receivables=total_receivables
+                           total_receivables=total_receivables,
+                           notifications = notifications
                            )
 
 
@@ -435,9 +441,196 @@ def loan_application_summary():
                            )
 
 
+@app.route('/loan_request', methods=['POST'])
+def create_loan_request():
+    try:
+        # Check if user is logged in
+        if 'email' not in session:
+            flash('Please log in to access this page.', 'error')
+            return redirect(url_for('login'))
+
+        loans_manager = Loans()
+        borrower_manager = Borrowers()
+        organisation_manager = Organisations()
+
+        # Get form data
+        data = request.form.to_dict()
+        borrower_id = data.get('borrower_id')
+
+        print(f"=== LOAN REQUEST DEBUG ===")
+        print(f"Session data: {dict(session)}")
+        print(f"Form data: {data}")
+        print(f"Borrower ID: {borrower_id}")
+
+        # Validate borrower_id
+        if not borrower_id:
+            flash('Invalid borrower ID', 'error')
+            return redirect(url_for('loan_application'))
+
+        # Get user_id from session
+        user_id = session.get('user_id')
+        if not user_id:
+            email = session.get('email')
+            if email:
+                try:
+                    user_response = loans_manager.supabase.table('users').select('id').eq('email', email).execute()
+                    if not hasattr(user_response, 'data') or not user_response.data:
+                        flash('User not found in database', 'error')
+                        return redirect(url_for('login'))
+                    user_id = user_response.data[0]['id']
+                    session['user_id'] = user_id
+                    print(f"Retrieved user_id from database: {user_id}")
+                except Exception as e:
+                    print(f"Error retrieving user_id: {e}")
+                    flash('Error retrieving user information', 'error')
+                    return redirect(url_for('login'))
+            else:
+                flash('User not authenticated', 'error')
+                return redirect(url_for('login'))
+
+        print(f"Using user_id: {user_id}")
+
+        # Reconstruct loan_summary from form data
+        try:
+            loan_summary = {
+                'principal': float(data.get('principal', 0)),
+                'recoverable_amount': float(data.get('recoverable_amount', 0)),
+                'monthly_interest_rate': float(data.get('monthly_rate', 0)),
+                'effective_amount': float(data.get('effective_amount', 0)),
+                'effective_rate': float(data.get('effective_rate', 0)),
+                'loan_tenure_days': int(data.get('days', 0)),
+                'loan_tenure_months': int(data.get('loan_tenure_months', 0)),
+                'method': data.get('method', ''),
+                'instalments': float(data.get('instalments', 0))
+            }
+        except ValueError as ve:
+            flash(f'Invalid form data: {str(ve)}', 'error')
+            return redirect(url_for('loan_application'))
+
+        print(f"Loan summary: {loan_summary}")
+
+        # Get borrower information
+        borrower_name = borrower_manager.get_borrower_name(borrower_id)
+        if not borrower_name:
+            flash('Borrower not found', 'error')
+            return redirect(url_for('loan_application'))  # Immediate redirect
+
+        # Get borrower details for contract generation
+        try:
+            borrower_response = loans_manager.supabase.table('borrowers').select('*').eq('id', borrower_id).execute()
+            if not hasattr(borrower_response, 'data') or not borrower_response.data:
+                print(f"Error: Supabase response missing 'data' or no data for borrower_id {borrower_id}: {borrower_response}")
+                flash('Borrower details not found', 'error')
+                return redirect(url_for('loan_application'))
+        except Exception as e:
+            print(f"Error fetching borrower details: {e}")
+            flash(f'Error fetching borrower details: {str(e)}', 'error')
+            return redirect(url_for('loan_application'))
+
+        borrower = borrower_response.data[0]
+
+        # Generate payment schedule
+        payment_schedule_result = loans_manager.generate_payment_schedule_dataframe(
+            principal=loan_summary['principal'],
+            days=loan_summary['loan_tenure_days'],
+            method=loan_summary['method']
+        )
+
+        if not payment_schedule_result['status']:
+            flash('Failed to generate payment schedule', 'error')
+            return redirect(url_for('loan_application'))
+
+        # Generate loan contract
+        loan_contract_result = loans_manager.generate_loan_contract(
+            borrower_name=f"{borrower['first_name']} {borrower['last_name']}",
+            borrower_id=borrower['id'],
+            organisation_name=organisation_manager.get_organisational_name(borrower['organisation_id']),
+            principal=loan_summary['principal'],
+            days=loan_summary['loan_tenure_days'],
+            method=loan_summary['method']
+        )
+
+        if not loan_contract_result['status']:
+            flash('Failed to generate loan contract', 'error')
+            return redirect(url_for('loan_application'))
+
+        print("Uploading files to storage...")
+
+        # Upload the files to the files table
+        files_result = loans_manager.upload_and_store_loan_files(
+            contract_content=loan_contract_result['contract_content'],
+            payment_schedule_df=payment_schedule_result['schedule_dataframe'],
+            borrower_name=borrower_name,
+            borrower_id=borrower_id
+        )
+
+        if not files_result['status']:
+            flash(f'Failed to upload files: {files_result["message"]}', 'error')
+            return redirect(url_for('loan_application'))
+
+        print(f"Files uploaded successfully: {files_result}")
+
+        # Get the loan_file_id from the files_result
+        loan_file_id = files_result['loan_file_id']
+
+        print(f"Creating loan request with loan_file_id: {loan_file_id}")
+
+        # Now create the loan request
+        loan_request_data = loans_manager.upload_loan_request(
+            loan_summary=loan_summary,
+            user_id=user_id,
+            borrower_id=borrower_id,
+            loan_file_id=loan_file_id
+        )
+
+        if not loan_request_data:
+            flash('Failed to create loan request', 'error')
+            return redirect(url_for('loan_application'))
+
+        print(f"Loan request created: {loan_request_data}")
+
+        # Store effective rate information
+        loan_request_id = loan_request_data[0]['id']
+        effective_rate_result = loans_manager.store_effective_rate(
+            loan_id=loan_request_id,
+            principal=loan_summary['principal'],
+            days=loan_summary['loan_tenure_days'],
+            method=loan_summary['method']
+        )
+
+        if not effective_rate_result['status']:
+            print(f"Warning: Failed to store effective rate: {effective_rate_result.get('message')}")
+
+        # store it as a notification in the notifications table
+        notification_manager = Notifications()
+        notification_response = notification_manager.formulate_notification(loan_request_data[0]) # formulate the notification
+        notification_manager.store_notification(notification_response)
+
+        # Success - redirect to success page or loan details
+        flash('Loan request created successfully!', 'success')
+        return redirect(url_for('loan_success'))
+
+    except Exception as e:
+        print(f"Exception in create_loan_request: {e}")
+        print(f"Traceback: {traceback.format_exc()}")
+        flash(f'An error occurred: {str(e)}', 'error')
+        return redirect(url_for('loan_application'))
+
+
+# You'll also need a success route
+@app.route('/loan_success')
+def loan_success():
+    """Display loan request success page"""
+
+    return render_template('loan_success.html',
+                          )
 
 
 
+@app.route('/loan_approvals', methods=['POAST','GET'])
+def loan_approvals():
+
+    return render_template('loan_approvals.html')
 
 
 @app.route('/logout')
@@ -445,8 +638,6 @@ def logout():
     session.clear()
     flash('You have been logged out successfully.', 'success')
     return redirect(url_for('login'))
-
-
 
 
 if __name__ == '__main__':

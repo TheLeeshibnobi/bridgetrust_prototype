@@ -1148,6 +1148,21 @@ class Borrowers:
                 "message": f"Error retrieving borrower edit data: {str(e)}"
             }
 
+    def get_borrower_name(self, borrower_id):
+        """get borrower name using their id"""
+        try:
+            response = (
+                self.supabase
+                .table('borrowers')
+                .select('first_name','last_name', 'id')
+                .eq('id', borrower_id)
+                .execute()
+            )
+
+            return f'{response.data[0]['first_name']} {response.data[0]['last_name']}'
+
+        except Exception as e:
+            print(f'Exception: {e}')
 
 # Remove the test execution from the class file
 # test = Borrowers()
