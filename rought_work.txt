@@ -1,0 +1,51 @@
+[
+  {
+    "personal_information": {
+      "id": "a8968bad-43f5-4649-ba62-42c44eed95ef",
+      "first_name": "bookie",
+      "last_name": "Zimba",
+      "nrc_number": "123456/12/1",
+      "date_of_birth": "1985-03-15",
+      "email": "john.zimba@example.com",
+      "phone": "+260971234567",
+      "address": "Plot 12, Lusaka West",
+      "gender": "Male",
+      "occupation": "Agricultural Officer",
+      "employee_id": null,
+      "next_of_kin_id": "f34c6904-23fa-45f6-bdca-812531bf5471",
+      "created_at": "2025-08-01T01:39:42.260216+00:00",
+      "organisation_id": "ee8278fc-66e6-4a0f-a6bb-3525657f98b8"
+    },
+    "loan_information": {
+      "id": "6f033d4a-abb6-458c-a189-d1c7819ff4c8",
+      "principal": 120000.0,
+      "interest": 30.0,
+      "total_payable": 388156.1,
+      "start_date": "2025-08-04",
+      "end_date": "2026-05-31",
+      "method": "amortisation",
+      "tenure": 300,
+      "months_tenure": 10,
+      "status": "pending",
+      "user_id": "c03a2e1b-5aba-4acb-bd51-6b670db54c3a",
+      "borrower_id": "a8968bad-43f5-4649-ba62-42c44eed95ef",
+      "loan_file_id": "e7533b8c-ced8-4279-8833-ac2dad9d8e3d",
+      "created_at": "2025-08-03T22:24:53.84553"
+    },
+    "next_of_kin_information": {
+      "first_name": "Stephen",
+      "last_name": "Kimo",
+      "email": "smkapambwe9@gmail.com",
+      "phone": "0954563456"
+    },
+    "loan_files": {
+      "id": "e7533b8c-ced8-4279-8833-ac2dad9d8e3d",
+      "loan_agreement": "https://vzhkddxkebeocfhzqgoo.supabase.co/storage/v1/object/public/loan-files/loan_contract_bookie_Zimba_20250804_002451.txt?",
+      "payment_schedule": "https://vzhkddxkebeocfhzqgoo.supabase.co/storage/v1/object/public/loan-files/payment_schedule_bookie_Zimba_20250804_002451.csv?",
+      "created_at": "2025-08-03T22:24:53.418354",
+      "borrower_id": "a8968bad-43f5-4649-ba62-42c44eed95ef"
+    },
+    "borrower_files": []
+  }
+  // ... (repeat structure for the remaining items)
+]

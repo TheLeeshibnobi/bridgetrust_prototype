@@ -626,11 +626,35 @@ def loan_success():
                           )
 
 
+@app.route('/loan_approvals')
+@app.route('/loan_approvals/<status>')
+def loan_approvals(status='pending'):
+    notification_manager = Notifications()
+    information = notification_manager.exhausted_loan_request_data(status)
 
-@app.route('/loan_approvals', methods=['POAST','GET'])
-def loan_approvals():
+    return render_template('loan_approvals.html',
+                           information=information,
+                           current_status=status)
 
-    return render_template('loan_approvals.html')
+
+@app.route('/reject_loan/<loan_id>', methods=['GET', 'POST'])
+def reject_loan(loan_id):
+    try:
+        print(f"Attempting to reject loan ID: {loan_id}")  # Debug log
+        print(f"Request method: {request.method}")  # Debug log
+
+        notification_manager = Notifications()
+        result = notification_manager.reject_loan_request(loan_id)
+
+        print(f"Rejection result: {result}")  # Debug log
+
+        if result:
+            return jsonify({'success': True, 'message': 'Loan rejected successfully'})
+        else:
+            return jsonify({'success': False, 'message': 'Failed to reject loan'})
+    except Exception as e:
+        print(f'Exception in reject_loan route: {e}')  # Debug log
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 @app.route('/logout')

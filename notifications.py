@@ -115,8 +115,117 @@ class Notifications:
             print(f'Exception while loading loan requests: {e}')
         return None
 
-    def exhausted_loan_request_data(self):
-        """gets an exhusted laon """
+    def exhausted_loan_request_data(self, status):
+        """
+        Gets a full loan request data with:
+        - personal_information (from borrowers table)
+        - loan_information (from loan_requests table)
+        - next_of_kin_information (from next_of_kins table)
+        - loan_files (from loan_files table)
+        - borrower_files (from borrower_files table)
+        - organisation_information (from organisations table)
+        """
+        try:
+            loan_response = (
+                self.supabase
+                .table('loan_requests')
+                .select('*')
+                .eq('status', status)
+                .execute()
+            )
 
-test = Notifications()
-print(test.load_notifications())
+            loan_requests = loan_response.data
+            full_data = []
+
+            for loan in loan_requests:
+                borrower_id = loan.get('borrower_id')
+                loan_file_id = loan.get('loan_file_id')
+
+                # Get borrower info
+                borrower_info = (
+                    self.supabase
+                    .table('borrowers')
+                    .select('*')
+                    .eq('id', borrower_id)
+                    .single()
+                    .execute()
+                ).data if borrower_id else {}
+
+                # Get next of kin info
+                next_of_kin_info = {}
+                if borrower_info and borrower_info.get('next_of_kin_id'):
+                    next_of_kin_id = borrower_info['next_of_kin_id']
+                    next_of_kin_info = (
+                        self.supabase
+                        .table('next_of_kins')
+                        .select('first_name, last_name, email, phone')
+                        .eq('id', next_of_kin_id)
+                        .single()
+                        .execute()
+                    ).data
+
+                # Get organisation info
+                organisation_info = {}
+                if borrower_info and borrower_info.get('organisation_id'):
+                    organisation_id = borrower_info['organisation_id']
+                    organisation_info = (
+                        self.supabase
+                        .table('organisations')
+                        .select('*')
+                        .eq('id', organisation_id)
+                        .single()
+                        .execute()
+                    ).data
+
+                # Get loan files info
+                loan_files = (
+                    self.supabase
+                    .table('loan_files')
+                    .select('*')
+                    .eq('id', loan_file_id)
+                    .single()
+                    .execute()
+                ).data if loan_file_id else {}
+
+                # Get borrower files
+                borrower_files = (
+                    self.supabase
+                    .table('borrower_files')
+                    .select('*')
+                    .eq('borrower_id', borrower_id)
+                    .execute()
+                ).data if borrower_id else []
+
+                # Append all data
+                full_data.append({
+                    'personal_information': borrower_info,
+                    'loan_information': loan,
+                    'next_of_kin_information': next_of_kin_info,
+                    'organisation_information': organisation_info,
+                    'loan_files': loan_files,
+                    'borrower_files': borrower_files
+                })
+
+            return full_data
+
+        except Exception as e:
+            print(f'Exception:: {e}')
+            return []
+
+    def reject_loan_request(self, loan_request_id):
+        """Updates the status of a specific loan request to 'rejected'."""
+        try:
+            response = (
+                self.supabase
+                .table('loan_requests')
+                .update({'status': 'rejected'})
+                .eq('id', loan_request_id)
+                .execute()
+            )
+            return response.data
+
+        except Exception as e:
+            print(f'Exception: {e}')
+
+
+

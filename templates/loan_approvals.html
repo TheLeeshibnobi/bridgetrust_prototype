@@ -28,6 +28,18 @@
         text-decoration: none;
       }
 
+      .loan-approvals .tab-link {
+        text-decoration: none;
+      }
+
+      .loan-approvals .active-tab {
+        background-color: #f5f4f6 !important;
+      }
+
+      .loan-approvals .frame-5.active-tab {
+        background-color: #f5f4f6 !important;
+      }
+
       .loan-approvals {
         background-color: #ffffff;
         display: flex;
@@ -266,8 +278,9 @@
 
       .loan-approvals .frame-12 {
         display: flex;
-        align-items: center;
-        gap: 20px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
         padding: 4px 24px;
         position: relative;
         align-self: stretch;
@@ -358,6 +371,12 @@
         height: 24px;
         background-image: url(https://c.animaapp.com/ZwvL7uO1/img/close-square.png);
         background-size: 100% 100%;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+      }
+
+      .loan-approvals .vuesax-linear-close:hover {
+        opacity: 0.7;
       }
 
       .loan-approvals .expanded-details {
@@ -444,21 +463,6 @@
         text-decoration: underline;
       }
 
-      .loan-approvals .frame-12 {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0;
-        padding: 4px 24px;
-        position: relative;
-        align-self: stretch;
-        width: 100%;
-        flex: 0 0 auto;
-        margin-top: -1px;
-        border: 1px solid;
-        border-color: #e1e3e3;
-      }
-
       .loan-approvals .row-content {
         display: flex;
         align-items: center;
@@ -477,9 +481,21 @@
         </div>
         <div class="frame-2">
           <div class="frame-3">
-            <div class="frame-4"><div class="text-wrapper-2">Pending</div></div>
-            <div class="frame-5"><div class="text-wrapper-3">Accepted</div></div>
-            <div class="frame-5"><div class="text-wrapper-3">Rejected</div></div>
+            <a href="{{ url_for('loan_approvals', status='pending') }}" class="tab-link">
+              <div class="frame-4 {% if current_status == 'pending' %}active-tab{% endif %}">
+                <div class="text-wrapper-2">Pending</div>
+              </div>
+            </a>
+            <a href="{{ url_for('loan_approvals', status='accepted') }}" class="tab-link">
+              <div class="frame-5 {% if current_status == 'accepted' %}active-tab{% endif %}">
+                <div class="text-wrapper-3">Accepted</div>
+              </div>
+            </a>
+            <a href="{{ url_for('loan_approvals', status='rejected') }}" class="tab-link">
+              <div class="frame-5 {% if current_status == 'rejected' %}active-tab{% endif %}">
+                <div class="text-wrapper-3">Rejected</div>
+              </div>
+            </a>
           </div>
           <div class="frame-6">
             <div class="frame-7">
@@ -493,102 +509,105 @@
               </div>
               <div class="frame-11"></div>
             </div>
+
+            {% for loan in information %}
             <div class="frame-12">
               <div class="row-content">
                 <div class="frame-13">
-                  <div class="frame-9"><div class="text-wrapper-7">28/05/2025</div></div>
-                  <div class="frame-9"><div class="text-wrapper-7">Stephen Kapambwe</div></div>
-                  <div class="frame-9"><div class="text-wrapper-8">CBU-Main Campus</div></div>
-                  <div class="frame-10"><div class="text-wrapper-9">K5,000</div></div>
-                  <div class="frame-10"><div class="text-wrapper-9">K1,500</div></div>
-                  <div class="frame-10"><div class="text-wrapper-9">K6,500</div></div>
+                  <div class="frame-9"><div class="text-wrapper-7">{{ loan.loan_information.start_date }}</div></div>
+                  <div class="frame-9"><div class="text-wrapper-7">{{ loan.personal_information.first_name }} {{ loan.personal_information.last_name }}</div></div>
+                  <div class="frame-9"><div class="text-wrapper-8">{{ loan.organisation_information.name }}</div></div>
+                  <div class="frame-10"><div class="text-wrapper-9">K{{ "{:,.0f}".format(loan.loan_information.principal) }}</div></div>
+                  <div class="frame-10"><div class="text-wrapper-9">{{ loan.loan_information.interest }}%</div></div>
+                  <div class="frame-10"><div class="text-wrapper-9">K{{ "{:,.0f}".format(loan.loan_information.total_payable) }}</div></div>
                 </div>
                 <div class="frame-14">
-                  <img class="arrow-up" src="https://c.animaapp.com/ZwvL7uO1/img/arrow-up.svg" onclick="toggleDetails()" />
+                  <img class="arrow-up" src="https://c.animaapp.com/ZwvL7uO1/img/arrow-up.svg" onclick="toggleDetails('{{ loop.index }}')" />
                   <div class="frame-3">
                     <img class="tick-square" src="https://c.animaapp.com/ZwvL7uO1/img/tick-square.svg" />
-                    <div class="vuesax-linear-close"></div>
+                    <div class="vuesax-linear-close" onclick="rejectLoan('{{ loan.loan_information.id }}', '{{ loop.index }}')"></div>
                   </div>
                 </div>
               </div>
 
-              <div class="expanded-details" id="expandedDetails">
+              <div class="expanded-details" id="expandedDetails{{ loop.index }}">
                 <div class="borrower-header">Borrower Details</div>
-                <div class="borrower-name">Stephen Kapambwe</div>
+                <div class="borrower-name">{{ loan.personal_information.first_name }} {{ loan.personal_information.last_name }}</div>
 
                 <div class="details-grid">
                   <div class="detail-item">
                     <div class="detail-label">Loan Amount</div>
-                    <div class="detail-value">5,000</div>
+                    <div class="detail-value">K{{ "{:,.0f}".format(loan.loan_information.principal) }}</div>
                   </div>
 
                   <div class="detail-item">
                     <div class="detail-label">Payment Plan</div>
-                    <div class="detail-value">ZMW 350</div>
+                    <div class="detail-value">{{ loan.loan_information.method|title }}</div>
                   </div>
 
                   <div class="detail-item">
                     <div class="detail-label">Home Address</div>
-                    <div class="detail-value">414 Chilangwe Road</div>
+                    <div class="detail-value">{{ loan.personal_information.address }}</div>
                   </div>
 
                   <div class="detail-item">
                     <div class="detail-label">Name of Next of Kin</div>
-                    <div class="detail-value">Sandra Banda</div>
+                    <div class="detail-value">{{ loan.next_of_kin_information.first_name }} {{ loan.next_of_kin_information.last_name }}</div>
                   </div>
 
                   <div class="detail-item">
                     <div class="detail-label">Percentage Interest rate</div>
-                    <div class="detail-value">45%</div>
+                    <div class="detail-value">{{ loan.loan_information.interest }}%</div>
                   </div>
 
                   <div class="detail-item">
                     <div class="detail-label">Payment Duration</div>
-                    <div class="detail-value">8 Months</div>
+                    <div class="detail-value">{{ loan.loan_information.months_tenure }} Months</div>
                   </div>
 
                   <div class="detail-item">
                     <div class="detail-label">Email Address</div>
-                    <div class="detail-value">jamesbanda101@gmail.com</div>
-                  </div>
-
-                  <div class="detail-item">
-                    <div class="detail-label">Relationship</div>
-                    <div class="detail-value">Wife</div>
-                  </div>
-
-                  <div class="detail-item">
-                    <div class="detail-label">Date Loan Approved</div>
-                    <div class="detail-value">28/02/2025</div>
-                  </div>
-
-                  <div class="detail-item">
-                    <div class="detail-label">Any Payments Remaining</div>
-                    <div class="detail-value">N/A</div>
+                    <div class="detail-value">{{ loan.personal_information.email }}</div>
                   </div>
 
                   <div class="detail-item">
                     <div class="detail-label">Phone Number</div>
-                    <div class="detail-value">+260712010246</div>
+                    <div class="detail-value">{{ loan.personal_information.phone }}</div>
                   </div>
 
                   <div class="detail-item">
-                    <div class="detail-label">Phone Number</div>
-                    <div class="detail-value">+260586940021</div>
+                    <div class="detail-label">Date of Birth</div>
+                    <div class="detail-value">{{ loan.personal_information.date_of_birth }}</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">Loan Status</div>
+                    <div class="detail-value">{{ loan.loan_information.status|title }}</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">Next of Kin Phone</div>
+                    <div class="detail-value">{{ loan.next_of_kin_information.phone }}</div>
+                  </div>
+
+                  <div class="detail-item">
+                    <div class="detail-label">NRC Number</div>
+                    <div class="detail-value">{{ loan.personal_information.nrc_number }}</div>
                   </div>
                 </div>
 
                 <button class="view-details-btn">View Details</button>
               </div>
             </div>
+            {% endfor %}
           </div>
         </div>
       </div>
     </div>
     <script>
-      function toggleDetails() {
-        const expandedDetails = document.getElementById('expandedDetails');
-        const arrow = document.querySelector('.arrow-up');
+      function toggleDetails(index) {
+        const expandedDetails = document.getElementById('expandedDetails' + index);
+        const arrow = document.querySelectorAll('.arrow-up')[index - 1];
 
         if (expandedDetails.classList.contains('show')) {
           expandedDetails.classList.remove('show');
@@ -596,6 +615,41 @@
         } else {
           expandedDetails.classList.add('show');
           arrow.classList.add('expanded');
+        }
+      }
+
+      function rejectLoan(loanId, rowIndex) {
+        if (confirm('Are you sure you want to reject this loan request?')) {
+          console.log('Rejecting loan ID:', loanId); // Debug log
+
+          // Try with GET method first to avoid CSRF issues
+          fetch(`/reject_loan/${loanId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          })
+          .then(response => {
+            console.log('Response status:', response.status); // Debug log
+            console.log('Response headers:', response.headers); // Debug log
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('Response data:', data); // Debug log
+            if (data.success) {
+              alert('Loan rejected successfully!');
+              location.reload();
+            } else {
+              alert('Error: ' + data.message);
+            }
+          })
+          .catch(error => {
+            console.error('Detailed error:', error);
+            alert('An error occurred while rejecting the loan: ' + error.message);
+          });
         }
       }
     </script>
