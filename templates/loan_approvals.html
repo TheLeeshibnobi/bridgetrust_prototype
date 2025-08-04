@@ -596,7 +596,7 @@
                   </div>
                 </div>
 
-                <button class="view-details-btn">View Details</button>
+                <a href="{{ url_for('loan_request_information', loan_id=loan.loan_information.id, status=loan.loan_information.status) }}" class="view-details-btn">View Details</a>
               </div>
             </div>
             {% endfor %}

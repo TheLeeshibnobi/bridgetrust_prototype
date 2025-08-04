@@ -657,6 +657,27 @@ def reject_loan(loan_id):
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
+@app.route('/loan_request_information/<loan_id>/<status>', methods=['POST', 'GET'])
+def loan_request_information(loan_id, status):
+    notifications_manager = Notifications()
+
+    # Get loans with the specific status
+    all_loans = notifications_manager.exhausted_loan_request_data(status)
+
+    # Find the specific loan by ID
+    loan_data = None
+    for loan in all_loans:
+        if loan['loan_information']['id'] == loan_id:
+            loan_data = loan
+            break
+
+    if not loan_data:
+        # Handle loan not found
+        return render_template('loan_request_information.html', loan=None, error="Loan not found")
+
+    return render_template('loan_request_information.html', loan=loan_data)
+
+
 @app.route('/logout')
 def logout():
     session.clear()

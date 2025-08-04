@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <style>
+      @import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+      @import url("https://fonts.googleapis.com/css?family=IBM+Plex+Sans+Devanagari:400,600");
+
+      * {
+        -webkit-font-smoothing: antialiased;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0px;
+        height: 100%;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+      }
+
+      button:focus-visible {
+        outline: 2px solid #4a90e2 !important;
+        outline: -webkit-focus-ring-color auto 5px !important;
+      }
+
+      a {
+        text-decoration: none;
+      }
+
+      .transactions {
+        background-color: #ffffff;
+        min-height: 100vh;
+        padding: 20px;
+        width: 100%;
+      }
+
+      .transactions .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+        background-color: #ffffff;
+      }
+
+      .transactions .header {
+        background-color: #eef6f7;
+        border-bottom: 3px solid #f9393a;
+        padding: 15px 30px;
+        margin-bottom: 40px;
+        border-radius: 8px;
+      }
+
+      .transactions .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .transactions .text-wrapper {
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 18px;
+        letter-spacing: 0;
+        line-height: 24px;
+        margin: 0;
+      }
+
+      .transactions .main-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 40px;
+      }
+
+      .transactions .info-section {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e1e3e3;
+      }
+
+      .transactions .section-title {
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 16px;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eef6f7;
+      }
+
+      .transactions .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f5f5f5;
+      }
+
+      .transactions .info-row:last-child {
+        border-bottom: none;
+      }
+
+      .transactions .info-label {
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #666;
+        font-size: 12px;
+        flex: 1;
+      }
+
+      .transactions .info-value {
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 500;
+        color: #000000;
+        font-size: 12px;
+        text-align: right;
+        flex: 1;
+      }
+
+      .transactions .document-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        border: 0.5px solid #9ca0a4;
+        border-radius: 8px;
+      }
+
+      .transactions .document-name {
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #000000;
+        font-size: 12px;
+        flex: 1;
+      }
+
+      .transactions .view-btn {
+        background-color: #eff3f5;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 12px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #000000;
+        font-size: 12px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .transactions .view-btn:hover {
+        background-color: #d5e5e8;
+      }
+
+      .transactions .schedule-section {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        border: 1px solid #e1e3e3;
+        overflow: hidden;
+      }
+
+      .transactions .schedule-title {
+        text-align: center;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 16px;
+        padding: 15px;
+        margin-bottom: 0;
+      }
+
+      .transactions .schedule-header {
+        background-color: #eef6f7;
+        border: 1px solid #e1e3e3;
+        padding: 12px 24px;
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 15px;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 600;
+        color: #000000;
+        font-size: 12px;
+      }
+
+      .transactions .schedule-row {
+        padding: 12px 24px;
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 15px;
+        border-bottom: 1px solid #e1e3e3;
+        font-family: "IBM Plex Sans Devanagari", Helvetica;
+        font-weight: 400;
+        color: #000000;
+        font-size: 12px;
+      }
+
+      .transactions .schedule-cell {
+        text-align: center;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 1200px) {
+        .transactions .main-content {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .transactions .container {
+          max-width: 95%;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .transactions {
+          padding: 10px;
+        }
+
+        .transactions .main-content {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+
+        .transactions .header {
+          padding: 12px 20px;
+        }
+
+        .transactions .text-wrapper {
+          font-size: 16px;
+        }
+
+        .transactions .schedule-header,
+        .transactions .schedule-row {
+          padding: 8px 12px;
+          gap: 8px;
+          font-size: 10px;
+        }
+
+        .transactions .schedule-section {
+          overflow-x: auto;
+        }
+
+        .transactions .schedule-header,
+        .transactions .schedule-row {
+          min-width: 600px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .transactions .info-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 4px;
+        }
+
+        .transactions .info-value {
+          text-align: left;
+        }
+
+        .transactions .text-wrapper {
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="transactions">
+      <div class="container">
+        <div class="header">
+          <div class="header-content">
+            <p class="text-wrapper">Loan Information - {{ loan.personal_information.first_name }} {{ loan.personal_information.last_name }}</p>
+          </div>
+        </div>
+
+        <div class="main-content">
+          <div class="info-section">
+            <div class="section-title">Personal Information</div>
+            <div class="info-row">
+              <div class="info-label">Full Names:</div>
+              <div class="info-value">{{ loan.personal_information.first_name }} {{ loan.personal_information.last_name }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Email Address:</div>
+              <div class="info-value">{{ loan.personal_information.email }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Phone Number:</div>
+              <div class="info-value">{{ loan.personal_information.phone }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">NRC/Passport:</div>
+              <div class="info-value">{{ loan.personal_information.nrc_number }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Place of work:</div>
+              <div class="info-value">{{ loan.personal_information.occupation }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Date of Birth:</div>
+              <div class="info-value">{{ loan.personal_information.date_of_birth }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Address:</div>
+              <div class="info-value">{{ loan.personal_information.address }}</div>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <div class="section-title">Loan Details</div>
+            <div class="info-row">
+              <div class="info-label">Loan Status:</div>
+              <div class="info-value">{{ loan.loan_information.status|title }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Ref No:</div>
+              <div class="info-value">{{ loan.loan_information.id[:8] }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Loan Principal:</div>
+              <div class="info-value">K{{ "{:,.0f}".format(loan.loan_information.principal) }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Interest rate:</div>
+              <div class="info-value">{{ loan.loan_information.interest }}%</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Issue Date:</div>
+              <div class="info-value">{{ loan.loan_information.start_date }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Maturity Date:</div>
+              <div class="info-value">{{ loan.loan_information.end_date }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Repayment Method:</div>
+              <div class="info-value">{{ loan.loan_information.method|title }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Payment Duration:</div>
+              <div class="info-value">{{ loan.loan_information.months_tenure }} Months</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Total Payable AMT:</div>
+              <div class="info-value">K{{ "{:,.0f}".format(loan.loan_information.total_payable) }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Organisation:</div>
+              <div class="info-value">{{ loan.organisation_information.name }}</div>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <div class="section-title">Supporting Documents</div>
+            {% if loan.loan_files.loan_agreement %}
+            <div class="document-item">
+              <div class="document-name">Loan Agreement</div>
+              <a href="{{ loan.loan_files.loan_agreement }}" target="_blank" class="view-btn">View</a>
+            </div>
+            {% endif %}
+            {% if loan.loan_files.payment_schedule %}
+            <div class="document-item">
+              <div class="document-name">Payment Schedule</div>
+              <a href="{{ loan.loan_files.payment_schedule }}" target="_blank" class="view-btn">View</a>
+            </div>
+            {% endif %}
+            {% if loan.borrower_files %}
+              {% for file in loan.borrower_files %}
+            <div class="document-item">
+              <div class="document-name">{{ file.name or 'Document' }}</div>
+              <a href="{{ file.url }}" target="_blank" class="view-btn">View</a>
+            </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="schedule-section">
+          <div class="schedule-title">Amortization Schedule</div>
+          <div class="schedule-header">
+            <div class="schedule-cell">No.</div>
+            <div class="schedule-cell">Due Date</div>
+            <div class="schedule-cell">Payment Due</div>
+            <div class="schedule-cell">Interest</div>
+            <div class="schedule-cell">Principal</div>
+            <div class="schedule-cell">Balance</div>
+            <div class="schedule-cell">Actual Paid</div>
+          </div>
+          <div class="schedule-row">
+            <div class="schedule-cell">1</div>
+            <div class="schedule-cell">30/05/2025</div>
+            <div class="schedule-cell">1053.25</div>
+            <div class="schedule-cell">315.975</div>
+            <div class="schedule-cell">737.275</div>
+            <div class="schedule-cell">5100</div>
+            <div class="schedule-cell">1053.25</div>
+          </div>
+          <!-- Add more rows as needed -->
+        </div>
+      </div>
+    </div>
+  </body>
+{% endblock %}
