@@ -1222,6 +1222,7 @@ class Loans:
                 'method': loan_summary.get('method'),
                 'tenure': loan_summary.get('loan_tenure_days'),
                 'months_tenure': loan_summary.get('loan_tenure_months'),
+                'instalments' : loan_summary.get('instalments'),
                 'status': 'pending',
                 'user_id': user_id,
                 'borrower_id': borrower_id,

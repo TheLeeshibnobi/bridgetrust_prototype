@@ -363,6 +363,12 @@
         position: relative;
         width: 24px;
         height: 24px;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+      }
+
+      .loan-approvals .tick-square:hover {
+        opacity: 0.7;
       }
 
       .loan-approvals .vuesax-linear-close {
@@ -524,7 +530,7 @@
                 <div class="frame-14">
                   <img class="arrow-up" src="https://c.animaapp.com/ZwvL7uO1/img/arrow-up.svg" onclick="toggleDetails('{{ loop.index }}')" />
                   <div class="frame-3">
-                    <img class="tick-square" src="https://c.animaapp.com/ZwvL7uO1/img/tick-square.svg" />
+                    <img class="tick-square" src="https://c.animaapp.com/ZwvL7uO1/img/tick-square.svg" onclick="approveLoan('{{ loan.loan_information.id }}', '{{ loop.index }}')" />
                     <div class="vuesax-linear-close" onclick="rejectLoan('{{ loan.loan_information.id }}', '{{ loop.index }}')"></div>
                   </div>
                 </div>
@@ -615,6 +621,40 @@
         } else {
           expandedDetails.classList.add('show');
           arrow.classList.add('expanded');
+        }
+      }
+
+      function approveLoan(loanId, rowIndex) {
+        if (confirm('Are you sure you want to approve this loan request?')) {
+          console.log('Approving loan ID:', loanId); // Debug log
+
+          fetch(`/approve_loan/${loanId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          })
+          .then(response => {
+            console.log('Response status:', response.status); // Debug log
+            console.log('Response headers:', response.headers); // Debug log
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('Response data:', data); // Debug log
+            if (data.success) {
+              alert('Loan approved successfully!');
+              location.reload();
+            } else {
+              alert('Error: ' + data.message);
+            }
+          })
+          .catch(error => {
+            console.error('Detailed error:', error);
+            alert('An error occurred while approving the loan: ' + error.message);
+          });
         }
       }
 

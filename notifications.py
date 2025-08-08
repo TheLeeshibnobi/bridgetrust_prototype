@@ -12,6 +12,7 @@ import random
 import string
 import smtplib
 from email.message import EmailMessage
+import pandas as pd
 
 
 class Notifications:
@@ -226,6 +227,80 @@ class Notifications:
 
         except Exception as e:
             print(f'Exception: {e}')
+
+    def approve_loan(self, loan_request_id):
+        """Approves a loan: updates its status to 'accepted' and inserts it into the loans table."""
+        try:
+            print(f"[DEBUG] Approving loan with ID: {loan_request_id}")
+
+            # 1. Update loan request status to 'accepted'
+            loan_request_response = (
+                self.supabase
+                .table('loan_requests')
+                .update({'status': 'accepted'})
+                .eq('id', loan_request_id)
+                .execute()
+            )
+            print(f"[DEBUG] Loan request update response: {loan_request_response.data}")
+
+            if not loan_request_response.data:
+                print("[ERROR] Loan request not found or failed to update.")
+                return None
+
+            loan_request = loan_request_response.data[0]
+
+            # 2. Get organisation_id from the borrower
+            borrower_response = (
+                self.supabase
+                .table('borrowers')
+                .select('organisation_id')
+                .eq('id', loan_request['borrower_id'])  # assuming 'id' is correct
+                .execute()
+            )
+            print(f"[DEBUG] Borrower response: {borrower_response.data}")
+
+            if not borrower_response.data:
+                print("[ERROR] Borrower not found.")
+                return None
+
+            organisation_id = borrower_response.data[0]['organisation_id']
+            interest_rate = loan_request['interest'] / 100
+            total_payable = loan_request['total_payable']
+            months_tenure = loan_request['months_tenure']
+
+            # 3. Prepare loan data
+            loan_data = {
+                'borrower_id': loan_request['borrower_id'],
+                'loan_amount': loan_request['principal'],
+                'interest_rate': interest_rate,
+                'term_months': loan_request['months_tenure'],
+                'monthly_payment': loan_request['instalments'] if loan_request.get('instalments') is not None else total_payable / months_tenure,
+                'start_date': loan_request['start_date'],
+                'end_date': loan_request['end_date'],
+                'organisation_id': organisation_id,
+                'status': 'active',
+                'user_id': loan_request['user_id'],
+                'remaining_payments': loan_request['months_tenure'],
+                'interval': loan_request['tenure'],
+                'loan_request_id': loan_request['id']
+            }
+
+            print(f"[DEBUG] Prepared loan_data to insert: {loan_data}")
+
+            # 4. Insert into loans table
+            loans_response = self.supabase.table('loans').insert(loan_data).execute()
+            print(f"[DEBUG] Loans insert response: {loans_response.data}")
+
+            if loans_response.data:
+                print("[SUCCESS] Loan inserted successfully.")
+                return loans_response.data
+            else:
+                print("[ERROR] Loan insert returned no data.")
+
+        except Exception as e:
+            print(f'[EXCEPTION] {e}')
+            return None
+
 
 
 

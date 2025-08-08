@@ -19,6 +19,8 @@ from loans import Loans
 from organisations import Organisations
 from borrowers import Borrowers
 from notifications import Notifications
+from wallet import Wallet
+from settings import Settings
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY') or 'fallback-secret-key-for-development'
@@ -637,6 +639,51 @@ def loan_approvals(status='pending'):
                            current_status=status)
 
 
+@app.route('/loan_request_information/<loan_id>/<status>', methods=['POST', 'GET'])
+def loan_request_information(loan_id, status):
+    notifications_manager = Notifications()
+
+    # Get loans with the specific status
+    all_loans = notifications_manager.exhausted_loan_request_data(status)
+
+    # Find the specific loan by ID
+    loan_data = next((loan for loan in all_loans if loan['loan_information']['id'] == loan_id), None)
+
+    if not loan_data:
+        return render_template('loan_request_information.html', loan=None, error="Loan not found")
+
+    # Load payment schedule CSV and prepare data for template
+    schedule_data = []
+    headers_info = []
+
+    try:
+        if loan_data.get('loan_files', {}).get('payment_schedule'):
+            df = pd.read_csv(loan_data['loan_files']['payment_schedule'])
+            df = df.fillna('')
+
+            # Convert the DataFrame to a list of dictionaries, preserving all original data exactly as is
+            schedule_data = df.to_dict(orient='records')
+
+            # Get the original column names exactly as they are in CSV
+            headers_info = df.columns.tolist()
+
+    except FileNotFoundError:
+        print(f"Payment schedule file not found for loan {loan_id}")
+    except pd.errors.EmptyDataError:
+        print(f"Payment schedule file is empty for loan {loan_id}")
+    except Exception as e:
+        print(f"Failed to load payment schedule for loan {loan_id}: {e}")
+        import traceback
+        traceback.print_exc()
+
+    return render_template(
+        'loan_request_information.html',
+        loan=loan_data,
+        schedule=schedule_data,
+        headers_info=headers_info
+    )
+
+
 @app.route('/reject_loan/<loan_id>', methods=['GET', 'POST'])
 def reject_loan(loan_id):
     try:
@@ -657,25 +704,127 @@ def reject_loan(loan_id):
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
-@app.route('/loan_request_information/<loan_id>/<status>', methods=['POST', 'GET'])
-def loan_request_information(loan_id, status):
-    notifications_manager = Notifications()
 
-    # Get loans with the specific status
-    all_loans = notifications_manager.exhausted_loan_request_data(status)
+@app.route('/approve_loan/<loan_id>', methods=['GET', 'POST'])
+def approve_loan(loan_id):
+    try:
+        print(f"Attempting to approve loan ID: {loan_id}")  # Debug log
+        print(f"Request method: {request.method}")  # Debug log
 
-    # Find the specific loan by ID
-    loan_data = None
-    for loan in all_loans:
-        if loan['loan_information']['id'] == loan_id:
-            loan_data = loan
-            break
+        notification_manager = Notifications()
+        result = notification_manager.approve_loan(loan_id)
 
-    if not loan_data:
-        # Handle loan not found
-        return render_template('loan_request_information.html', loan=None, error="Loan not found")
+        print(f"Rejection result: {result}")  # Debug log
 
-    return render_template('loan_request_information.html', loan=loan_data)
+        if result:
+            #return jsonify({'success': True, 'message': 'Loan approved successfully'})
+            return redirect(url_for('approval_success'))
+
+        else:
+            return jsonify({'success': False, 'message': 'Failed to approve loan'})
+    except Exception as e:
+        print(f'Exception in reject_loan route: {e}')  # Debug log
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/approval_success')
+def approval_success():
+    """Display loan request success page"""
+
+    return render_template('approval_success.html'
+                          )
+
+
+@app.route('/wallet', methods=['POST','GET'])
+def wallet():
+    wallet_manager = Wallet()
+
+    wallet_transactions = wallet_manager.load_transactions()
+    wallet_balance = wallet_manager.wallet_balance()
+    return render_template('wallet.html',
+                           wallet_transactions=wallet_transactions,
+                           wallet_balance = wallet_balance
+                           )
+
+
+@app.route('/withdraw', methods=['POST', 'GET'])
+def withdraw():
+    wallet_manager = Wallet()
+    wallet_transactions = wallet_manager.load_transactions()
+    wallet_balance = wallet_manager.wallet_balance()
+
+    # Debug: Print the balance to console
+    print(f"Wallet balance: {wallet_balance}")
+    print(f"Type of balance: {type(wallet_balance)}")
+
+    return render_template('withdraw.html', wallet_balance=wallet_balance)
+
+
+@app.route('/cash_out', methods=['POST'])
+def cash_out():
+    amount = request.form['amount']
+    bank_name = request.form['bank_name']
+    account_number = request.form['account_number']
+    company_name = request.form['company_name']
+    swift_code = request.form['swift_code']
+    branch_info = request.form['branch_info']
+
+    # Process the withdrawal
+    wallet_manager = Wallet()
+    process = wallet_manager.insert_withdraw(amount, bank_name, account_number, company_name, swift_code, branch_info)
+    result, message = process
+    if not result:
+        return render_template('withdraw.html')
+
+
+    return redirect(url_for('success_page'))
+
+
+@app.route('/account_info_settings', methods=['POST', 'GET'])
+def account_info_settings():
+    settings_manager = Settings()
+
+    if request.method == 'POST':
+        # Get the new values from the form
+        nominal_rate_input = request.form.get('nominal_monthly_rate', '0')
+        try:
+            nominal_rate_decimal = float(nominal_rate_input) / 100
+        except (ValueError, TypeError):
+            nominal_rate_decimal = 0.0
+
+        updated_data = {
+            'name': request.form.get('institution_name'),
+            'email': request.form.get('organization_email'),
+            'password': request.form.get('password'),
+            'secret_key': request.form.get('company_secret_key'),
+            'nominal_rate': nominal_rate_decimal,
+            'address': request.form.get('business_address'),
+            'telephone': request.form.get('telephone_number')
+        }
+
+        # Update the business information in your database
+        result = settings_manager.update_business_info(updated_data)
+        if not result:
+            flash('Failed to update, please try again')
+        else:  # Add this else
+            flash('Information updated successfully')
+
+        # Optionally redirect or show success message
+        return redirect(url_for('account_info_settings'))
+
+    # GET request - show the form with current data
+    business_info = settings_manager.get_business_info()
+    return render_template('account_info_settings.html', business_information=business_info)
+
+
+@app.route('/user_settings', methods=['POST','GET'])
+def user_settings():
+
+    settings_manager = Settings()
+    users = settings_manager.load_users()
+
+    return render_template('user_settings.html', users = users)
+
 
 
 @app.route('/logout')

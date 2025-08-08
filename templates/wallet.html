@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallet Balance</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .wallet-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 900px;
+      min-width: 300px;
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    .cash-in-wallet {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 5px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .cash-in-wallet span {
+      color: red;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .cash-amount {
+      font-size: clamp(24px, 5vw, 32px);
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 15px 10px;
+      background: #f0f0f0;
+      border-radius: 5px;
+    }
+
+    .withdraw-btn {
+      background-color: #ff0000;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .withdraw-btn:hover {
+      background-color: #cc0000;
+    }
+
+    .table-container {
+      margin-top: 20px;
+    }
+
+    .table-container h3 {
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      min-width: 700px;
+    }
+
+    th, td {
+      padding: 12px 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      white-space: nowrap;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .pending {
+      color: #ff9900;
+    }
+
+    .cleared {
+      color: #008000;
+    }
+
+    .activate-windows {
+      position: absolute;
+      bottom: 10px;
+      right: 20px;
+      color: #808080;
+      font-size: 12px;
+      text-align: right;
+      line-height: 1.2;
+    }
+
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+        align-items: flex-start;
+        padding-top: 20px;
+      }
+
+      .wallet-container {
+        padding: 15px;
+        margin-bottom: 60px;
+      }
+
+      .cash-in-wallet {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+        gap: 15px;
+      }
+
+      .cash-in-wallet span {
+        font-size: 18px;
+      }
+
+      .withdraw-btn {
+        align-self: center;
+        padding: 12px 25px;
+      }
+
+      .cash-amount {
+        font-size: 28px;
+        padding: 20px 10px;
+      }
+
+      .table-container h3 {
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+
+      table {
+        font-size: 12px;
+        min-width: 650px;
+      }
+
+      th, td {
+        padding: 8px 6px;
+      }
+
+      .activate-windows {
+        position: static;
+        text-align: center;
+        margin-top: 20px;
+        font-size: 11px;
+      }
+    }
+
+    /* Small mobile styles */
+    @media (max-width: 480px) {
+      .cash-amount {
+        font-size: 24px;
+      }
+
+      table {
+        font-size: 11px;
+        min-width: 600px;
+      }
+
+      th, td {
+        padding: 6px 4px;
+      }
+    }
+
+    /* Large desktop styles */
+    @media (min-width: 1200px) {
+      .wallet-container {
+        max-width: 1100px;
+        padding: 30px;
+      }
+
+      .cash-amount {
+        font-size: 36px;
+        padding: 25px 15px;
+      }
+
+      table {
+        font-size: 15px;
+        min-width: auto;
+      }
+
+      th, td {
+        padding: 15px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wallet-container">
+    <div class="cash-in-wallet">
+      <span>Cash in wallet</span>
+      <a href="{{ url_for('withdraw') }}">
+        <button class="withdraw-btn">Withdraw</button>
+      </a>
+    </div>
+    <div class="cash-amount">ZMW {{ wallet_balance }}</div>
+    <div class="table-container">
+      <h3>Account balance history</h3>
+      <div class="table-wrapper">
+        <table>
+          <tr>
+            <th>Date</th>
+            <th>Txn No.</th>
+            <th>Txn Type</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Amount</th>
+            <th>Balance</th>
+          </tr>
+
+          {% for transaction in wallet_transactions %}
+          <tr>
+            <td>{{ transaction.created_at.strftime('%d/%m/%y') if transaction.created_at else '' }}</td>
+            <td>{{ transaction.transaction_number }}</td>
+            <td>
+              {% if transaction.transaction_type == 'loan_repayment' %}
+                Payment
+              {% elif transaction.transaction_type == 'cash_withdraw' %}
+                Withdraw
+              {% else %}
+                {{ transaction.transaction_type }}
+              {% endif %}
+            </td>
+            <td>{{ transaction.description }}</td>
+            <td class="{{ 'cleared' if transaction.status == 'successful' else 'pending' }}">{{ transaction.status.capitalize() }}</td>
+            <td>
+              {% if transaction.transaction_type == 'cash_withdraw' %}
+                -K{{ "{:,.0f}".format(transaction.amount) }}
+              {% else %}
+                K{{ "{:,.0f}".format(transaction.amount) }}
+              {% endif %}
+            </td>
+            <td>K{{ "{:,.0f}".format(transaction.balance) }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+
+      </div>
+    </div>
+
+  </div>
+</body>
+
+{% endblock %}

@@ -1,0 +1,5 @@
+wallet has a trigger from repayments so that immediately a repayment ois done through the pay gateway it will
+ automatically update the wallet table
+
+the norminal rate has its own table but it is has a trigerr to get the nominal rate from the businss information table
+ under nominal rate value

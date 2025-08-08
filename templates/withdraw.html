@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdraw Funds</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f7fa;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 40px;
+            border-bottom: 3px solid #dc3545;
+        }
+
+        .title {
+            font-size: 36px;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 20px;
+        }
+
+        .balance-label {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .balance {
+            font-size: 42px;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .form-section {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 32px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 16px;
+            color: #212529;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .dropdown-container {
+            position: relative;
+        }
+
+        .dropdown-button {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+            text-align: left;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.2s;
+        }
+
+        .dropdown-button:hover {
+            border-color: #007bff;
+        }
+
+        .dropdown-arrow {
+            transition: transform 0.2s;
+        }
+
+        .dropdown-button.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 100;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .dropdown-menu.show {
+            max-height: 400px;
+        }
+
+        .account-item {
+            padding: 20px;
+            border-bottom: 1px solid #f8f9fa;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .account-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .account-item:last-child {
+            border-bottom: none;
+        }
+
+        .account-icon {
+            width: 48px;
+            height: 48px;
+            background: #c8d4e3;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .account-info {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .account-details {
+            flex: 1;
+        }
+
+        .bank-name {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .company-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 4px;
+        }
+
+        .branch-info {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .account-number {
+            font-size: 18px;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+            margin-top: 40px;
+        }
+
+        .btn {
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-cancel {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-cancel:hover {
+            background: #e9ecef;
+        }
+
+        .btn-withdraw {
+            background: #212529;
+            color: white;
+        }
+
+        .btn-withdraw:hover {
+            background: #495057;
+        }
+
+        .btn-withdraw:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: #ccc;
+            font-size: 14px;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+            .form-section {
+                padding: 30px 20px;
+            }
+
+            .title {
+                font-size: 28px;
+            }
+
+            .balance {
+                font-size: 32px;
+            }
+
+            .button-container {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Withdraw Funds</h1>
+            <div class="balance-label">Current balance available</div>
+            <div class="balance">ZMK {{ wallet_balance }}</div>
+        </div>
+
+        <form action="{{ url_for('cash_out') }}" method="POST" id="withdrawForm">
+            <div class="form-section">
+                <div class="form-group">
+                    <label class="form-label" for="amount">Enter the amount you want to withdraw</label>
+                    <input type="number"
+                           class="form-input"
+                           name="amount"
+                           id="amount"
+                           placeholder="Enter amount"
+                           min="1"
+                           step="0.01"
+                           required>
+                    <div class="error-message" id="amountError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Select the destination bank account</label>
+                    <div class="dropdown-container">
+                        <button type="button" class="dropdown-button" id="dropdownButton">
+                            <span>Select account</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <div class="account-item" onclick="selectAccount(this)" data-bank="ABSA Bank PLC" data-account="150-7583759" data-company="Bridge Trust Finance Ltd." data-swift="ZZX542" data-branch="Head Office Branch">
+                                <div class="account-icon"></div>
+                                <div class="account-info">
+                                    <div class="account-details">
+                                        <div class="bank-name">ABSA Bank PLC</div>
+                                        <div class="company-name">Bridge Trust Finance Ltd.</div>
+                                        <div class="branch-info">Head Office Branch&nbsp;&nbsp;&nbsp;&nbsp;Swift Code: ZZX542</div>
+                                    </div>
+                                    <div class="account-number">150-7583759</div>
+                                </div>
+                            </div>
+                            <div class="account-item" onclick="selectAccount(this)" data-bank="Zanaco Bank" data-account="203437192" data-company="Bridge Trust Finance Ltd." data-swift="ZZX542" data-branch="Head Office Branch">
+                                <div class="account-icon"></div>
+                                <div class="account-info">
+                                    <div class="account-details">
+                                        <div class="bank-name">Zanaco Bank</div>
+                                        <div class="company-name">Bridge Trust Finance Ltd.</div>
+                                        <div class="branch-info">Head Office Branch&nbsp;&nbsp;&nbsp;&nbsp;Swift Code: ZZX542</div>
+                                    </div>
+                                    <div class="account-number">203437192</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden form fields to store selected account data -->
+                    <input type="hidden" name="bank_name" id="bankName" required>
+                    <input type="hidden" name="account_number" id="accountNumber" required>
+                    <input type="hidden" name="company_name" id="companyName" required>
+                    <input type="hidden" name="swift_code" id="swiftCode" required>
+                    <input type="hidden" name="branch_info" id="branchInfo" required>
+
+                    <div class="error-message" id="accountError"></div>
+                </div>
+
+                <div class="button-container">
+                    <button type="button" class="btn btn-cancel" onclick="history.back()">Cancel</button>
+                    <button type="submit" class="btn btn-withdraw" id="submitBtn">Withdraw</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="watermark">Activate Windows<br>Go to Settings to activate Windows.</div>
+
+    <script>
+        const dropdownButton = document.getElementById('dropdownButton');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+        const withdrawForm = document.getElementById('withdrawForm');
+
+        dropdownButton.addEventListener('click', function() {
+            this.classList.toggle('active');
+            dropdownMenu.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!dropdownButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownButton.classList.remove('active');
+                dropdownMenu.classList.remove('show');
+            }
+        });
+
+        function selectAccount(accountItem) {
+            const companyName = accountItem.getAttribute('data-company');
+            const accountNumber = accountItem.getAttribute('data-account');
+            const bankName = accountItem.getAttribute('data-bank');
+            const swiftCode = accountItem.getAttribute('data-swift');
+            const branchInfo = accountItem.getAttribute('data-branch');
+
+            // Update dropdown button text
+            dropdownButton.querySelector('span:first-child').textContent = `${companyName} - ${accountNumber}`;
+
+            // Update hidden form fields
+            document.getElementById('bankName').value = bankName;
+            document.getElementById('accountNumber').value = accountNumber;
+            document.getElementById('companyName').value = companyName;
+            document.getElementById('swiftCode').value = swiftCode;
+            document.getElementById('branchInfo').value = branchInfo;
+
+            // Close dropdown
+            dropdownButton.classList.remove('active');
+            dropdownMenu.classList.remove('show');
+
+            // Clear any error message
+            document.getElementById('accountError').textContent = '';
+        }
+
+        // Prevent dropdown from closing when clicking inside the menu
+        dropdownMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Form validation
+        withdrawForm.addEventListener('submit', function(e) {
+            let isValid = true;
+
+            // Clear previous error messages
+            document.getElementById('amountError').textContent = '';
+            document.getElementById('accountError').textContent = '';
+
+            // Validate amount
+            const amount = document.getElementById('amount').value;
+            if (!amount || parseFloat(amount) <= 0) {
+                document.getElementById('amountError').textContent = 'Please enter a valid amount';
+                isValid = false;
+            }
+
+            // Validate account selection
+            const bankName = document.getElementById('bankName').value;
+            if (!bankName) {
+                document.getElementById('accountError').textContent = 'Please select a destination bank account';
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        // Real-time amount validation
+        document.getElementById('amount').addEventListener('input', function() {
+            const amount = parseFloat(this.value);
+            const balance = parseFloat('{{ wallet_balance }}');
+
+            if (amount > balance) {
+                document.getElementById('amountError').textContent = 'Amount exceeds available balance';
+                document.getElementById('submitBtn').disabled = true;
+            } else {
+                document.getElementById('amountError').textContent = '';
+                document.getElementById('submitBtn').disabled = false;
+            }
+        });
+    </script>
+</body>
+{% endblock %}

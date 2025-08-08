@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <title>Transfer Request Success</title>
+  </head>
+  <body>
+    <main class="wallet" role="main">
+      <style>
+        .wallet {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          background-color: #f5f5f5;
+        }
+        .div {
+          text-align: center;
+          background-color: #fff;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .vector {
+          width: 50px;
+          height: 50px;
+          margin-bottom: 20px;
+        }
+        .frame {
+          margin-top: 20px;
+        }
+        .vuesax-bold-verify {
+          width: 40px;
+          height: 40px;
+          margin-bottom: 10px;
+        }
+        .text-wrapper {
+          font-size: 24px;
+          font-weight: bold;
+          margin-bottom: 10px;
+        }
+        .p {
+          font-size: 16px;
+          color: #666;
+          margin-bottom: 20px;
+        }
+        .div-wrapper {
+          background-color: #007bff;
+          color: #fff;
+          padding: 10px 20px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 16px;
+        }
+        .div-wrapper:hover {
+          background-color: #0056b3;
+        }
+        .text-wrapper-2 {
+          font-weight: bold;
+        }
+      </style>
+      <div class="div">
+        <img class="vector" src="img/vector-15.svg" alt="" role="presentation" />
+        <section class="frame" aria-labelledby="success-heading">
+          <img class="vuesax-bold-verify" src="img/verify.svg" alt="Success verification icon" />
+          <h1 id="success-heading" class="text-wrapper">Transfer request successfully initiated</h1>
+          <p class="p">You can the status progress of your withdraw request on the Cashier Page.</p>
+          <button type="button" class="div-wrapper" aria-label="Go back to previous page">
+            <span class="text-wrapper-2">Go back</span>
+          </button>
+        </section>
+      </div>
+    </main>
+  </body>
+{% endblock %}

@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #fff;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 0;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #64748b;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: #1a1a1a;
+            border-bottom-color: #3b82f6;
+            font-weight: 500;
+        }
+
+        .tab:hover:not(.active) {
+            color: #475569;
+        }
+
+        .content {
+            background: #fff;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .users-section {
+            padding: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            padding: 8px 12px 8px 35px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 250px;
+            background-color: #f8fafc;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #fff;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .add-btn {
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-left: 10px;
+        }
+
+        .add-btn:hover {
+            background: #374151;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #64748b;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: #1a1a1a;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-select {
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .form-input[readonly] {
+            background-color: #f8fafc;
+            color: #64748b;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-cancel {
+            padding: 10px 20px;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-cancel:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-save {
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-save:hover {
+            background: #2563eb;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .users-table td {
+            padding: 16px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+        }
+
+        .users-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .user-name {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        .user-email, .user-location, .user-position, .user-type {
+            color: #64748b;
+        }
+
+        .chevron {
+            color: #cbd5e1;
+            font-size: 12px;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 20px 0;
+        }
+
+        .expandable-section {
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .expandable-header {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            cursor: pointer;
+            background: #f8fafc;
+        }
+
+        .expandable-header:hover {
+            background: #f1f5f9;
+        }
+
+        .expandable-title {
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-left: 8px;
+        }
+
+        .expand-icon {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>System Settings</h1>
+            <p>Setup and edit system settings and preferences</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab">Account Info</button>
+            <button class="tab active">Users</button>
+            <button class="tab">Packages</button>
+            <button class="tab">Building Info</button>
+            <button class="tab">Late Threshold</button>
+            <button class="tab">Advanced Notification</button>
+        </div>
+
+        <div class="content">
+            <div class="users-section">
+                <div class="section-header">
+                    <h2 class="section-title">Users</h2>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <!-- Replaced input with plain text -->
+                        <span class="add-user-text" style="font-size: 16px; font-weight: 500;">Add user</span>
+                        <button class="add-btn" id="addUserBtn">+</button>
+                    </div>
+                </div>
+
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Name of User</th>
+                            <th>Email</th>
+                            <th>Location</th>
+                            <th>Position</th>
+                            <th>User Type</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr data-user-id="{{ user.id }}">
+                            <td class="user-name">{{ user.user_name|title }}</td>
+                            <td class="user-email">{{ user.email }}</td>
+                            <td class="user-location">{{ user.location|title if user.location else '-' }}</td>
+                            <td class="user-position">{{ user.position|title if user.position else '-' }}</td>
+                            <td class="user-type">{{ user.user_type|title }}</td>
+                            <td class="chevron">›</td>
+                        </tr>
+                        {% endfor %}
+                        {% if not users %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
+                                No users found
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <div class="section-divider"></div>
+
+                {% if users|selectattr('location', 'equalto', 'lusaka')|list %}
+                <div class="expandable-section">
+                    <div class="expandable-header">
+                        <span class="expand-icon">▼</span>
+                        <span class="expandable-title">Lusaka Branch</span>
+                    </div>
+                    <div class="expandable-content">
+                        <table class="users-table">
+                            <tbody>
+                                {% for user in users if user.location and user.location.lower() == 'lusaka' %}
+                                <tr data-user-id="{{ user.id }}">
+                                    <td class="user-name">{{ user.user_name|title }}</td>
+                                    <td class="user-email">{{ user.email }}</td>
+                                    <td class="user-location">{{ user.location|title }}</td>
+                                    <td class="user-position">{{ user.position|title if user.position else '-' }}</td>
+                                    <td class="user-type">{{ user.user_type|title }}</td>
+                                    <td class="chevron">›</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New User</h3>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+
+            <form id="addUserForm" method="POST" action="/add_user">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="user_name">User Name</label>
+                        <input type="text" id="user_name" name="user_name" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="user_type">User Type</label>
+                        <select id="user_type" name="user_type" class="form-select" required>
+                            <option value="">Select user type</option>
+                            <option value="admin">Admin</option>
+                            <option value="editor">Editor</option>
+                            <option value="viewer">Viewer</option>
+                            <option value="super_admin">Super Admin</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="position">Position</label>
+                        <input type="text" id="position" name="position" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="location">Location</label>
+                        <input type="text" id="location" name="location" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="nrc_number">NRC Number</label>
+                        <input type="text" id="nrc_number" name="nrc_number" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="date_of_birth">Date of Birth</label>
+                        <input type="date" id="date_of_birth" name="date_of_birth" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="secret_key">Secret Key</label>
+                        <input type="text" id="secret_key" name="secret_key" class="form-input"
+                               value="AUTO_GENERATED_KEY_12345" readonly>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn-save">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Add basic functionality for tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Add functionality for expandable sections
+        document.querySelectorAll('.expandable-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const icon = this.querySelector('.expand-icon');
+                const content = this.parentElement.querySelector('.expandable-content');
+
+                if (content) {
+                    if (content.style.display === 'none') {
+                        content.style.display = 'block';
+                        icon.textContent = '▼';
+                    } else {
+                        content.style.display = 'none';
+                        icon.textContent = '▶';
+                    }
+                }
+            });
+        });
+
+        // Modal functionality
+        const modal = document.getElementById('addUserModal');
+        const addBtn = document.getElementById('addUserBtn');
+        const closeBtn = document.getElementById('closeModal');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        // Open modal
+        addBtn.addEventListener('click', function() {
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        });
+
+        // Close modal functions
+        function closeModal() {
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto'; // Restore scrolling
+            document.getElementById('addUserForm').reset(); // Reset form
+        }
+
+        closeBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('show')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
