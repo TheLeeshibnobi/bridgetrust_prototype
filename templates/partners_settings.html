@@ -1,0 +1,727 @@
+{% extends "base.html" %}
+
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 30px;
+            gap: 0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .tab:hover {
+            color: #374151;
+        }
+
+        .tab.active {
+            color: #dc2626;
+            border-bottom-color: #dc2626;
+            font-weight: 500;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            width: 280px;
+            padding: 8px 12px 8px 36px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #f9fafb;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            width: 16px;
+            height: 16px;
+        }
+
+        .add-button {
+            background: #000;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: background 0.2s ease;
+        }
+
+        .add-button:hover {
+            background: #1f2937;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .partners-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-header {
+            background: #f3f4f6;
+        }
+
+        .table-header th {
+            padding: 12px 24px;
+            text-align: left;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .table-row {
+            border-bottom: 1px solid #e5e7eb;
+            transition: background 0.2s ease;
+        }
+
+        .table-row:hover {
+            background: #f9fafb;
+        }
+
+        .table-cell {
+            padding: 16px 24px;
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-btn {
+            padding: 6px 16px;
+            border: 1px solid #d1d5db;
+            background: white;
+            color: #374151;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            border-color: #9ca3af;
+            background: #f9fafb;
+        }
+
+        .bottom-section {
+            padding: 40px 24px;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        .bottom-section h3 {
+            font-size: 18px;
+            margin-bottom: 4px;
+            color: #d1d5db;
+        }
+
+        .bottom-section p {
+            font-size: 14px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .modal-close:hover {
+            color: #374151;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cancel {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-primary {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #b91c1c;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+
+            .tab {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 16px;
+            }
+
+            .header-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-input {
+                width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .modal {
+                width: 95%;
+                margin: 20px;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>System Settings</h1>
+            <p>Setup and edit system settings and preferences</p>
+        </div>
+
+        <div class="tabs">
+            <a href="{{ url_for('account_info_settings') }}"><div class="tab">Account Info</div></a>
+            <a href="{{ url_for('user_settings') }}"><div class="tab">Users</div></a>
+            <a href="{{ url_for('partner_settings') }}"><div class="tab active">Partners</div></a>
+        </div>
+
+        <div class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Organizational Partners</h2>
+                <div class="header-controls">
+                    <div class="search-container">
+                        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text" class="search-input" placeholder="Search">
+                    </div>
+                    <button class="add-button" id="addPartnerBtn">+</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="partners-table">
+                    <thead class="table-header">
+                        <tr>
+                            <th>Organization</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for partner in partners %}
+                        <tr class="table-row">
+                            <td class="table-cell">{{ partner.first_name }} {{ partner.last_name }}</td>
+                            <td class="table-cell">{{ partner.email }}</td>
+                            <td class="table-cell">{{ partner.phone }}</td>
+                            <td class="table-cell">{{ partner.created_at }}</td>
+                            <td class="table-cell">
+                                <div class="action-buttons">
+                                    <button class="action-btn edit-btn"
+                                            data-id="{{ partner.id }}"
+                                            data-first-name="{{ partner.first_name }}"
+                                            data-last-name="{{ partner.last_name }}"
+                                            data-email="{{ partner.email }}"
+                                            data-phone="{{ partner.phone }}">Edit</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px;">
+                                No partners found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Partner Modal -->
+    <div class="modal-overlay" id="addPartnerModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Partner</h3>
+                <button class="modal-close" type="button">&times;</button>
+            </div>
+            <form id="addPartnerForm" method="POST" action="{{ url_for('add_partner') }}">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="add_first_name">First Name</label>
+                        <input type="text" class="form-input" id="add_first_name" name="first_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="add_last_name">Last Name</label>
+                        <input type="text" class="form-input" id="add_last_name" name="last_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="add_email">Email</label>
+                        <input type="email" class="form-input" id="add_email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="add_phone">Phone</label>
+                        <input type="tel" class="form-input" id="add_phone" name="phone" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Partner</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Partner Modal -->
+    <div class="modal-overlay" id="editPartnerModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Partner</h3>
+                <button class="modal-close" type="button">&times;</button>
+            </div>
+            <form id="editPartnerForm" method="POST" action="{{ url_for('update_partner') }}">
+                <input type="hidden" id="edit_partner_id" name="partner_id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="edit_first_name">First Name</label>
+                        <input type="text" class="form-input" id="edit_first_name" name="first_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="edit_last_name">Last Name</label>
+                        <input type="text" class="form-input" id="edit_last_name" name="last_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="edit_email">Email</label>
+                        <input type="email" class="form-input" id="edit_email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="edit_phone">Phone</label>
+                        <input type="tel" class="form-input" id="edit_phone" name="phone" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Partner</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing partners page functionality...');
+
+            // Enhanced search functionality - works independently of modals
+            initializeSearch();
+
+            // Modal functionality - only if modals exist (progressive enhancement)
+            initializeModals();
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeAllModals();
+                }
+            });
+        });
+
+        // Search functionality - independent of modal system
+        function initializeSearch() {
+            const searchInput = document.querySelector('.search-input');
+            if (!searchInput) return;
+
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                const tableRows = document.querySelectorAll('.partners-table tbody .table-row');
+                let visibleRowsCount = 0;
+
+                tableRows.forEach(row => {
+                    const cells = row.querySelectorAll('.table-cell');
+                    const organizationName = cells[0] ? cells[0].textContent.toLowerCase() : '';
+                    const email = cells[1] ? cells[1].textContent.toLowerCase() : '';
+                    const phone = cells[2] ? cells[2].textContent.toLowerCase() : '';
+                    const createdAt = cells[3] ? cells[3].textContent.toLowerCase() : '';
+
+                    const matchesSearch = searchTerm === '' ||
+                        organizationName.includes(searchTerm) ||
+                        email.includes(searchTerm) ||
+                        phone.includes(searchTerm) ||
+                        createdAt.includes(searchTerm);
+
+                    if (matchesSearch) {
+                        row.style.display = '';
+                        visibleRowsCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                updateNoResultsMessage(visibleRowsCount, searchTerm);
+            });
+
+            // Clear search on Escape key
+            searchInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Escape') {
+                    clearSearch();
+                }
+            });
+        }
+
+        // Modal functionality - only intercepts if modals are present
+        function initializeModals() {
+            const addPartnerModal = document.getElementById('addPartnerModal');
+            const editPartnerModal = document.getElementById('editPartnerModal');
+            const addPartnerBtn = document.getElementById('addPartnerBtn');
+
+            // Only initialize modal functionality if all elements exist
+            if (!addPartnerModal || !editPartnerModal || !addPartnerBtn) {
+                console.log('Modal elements not found - using standard form submission');
+                return;
+            }
+
+            console.log('Modal elements found - enabling modal functionality');
+
+            // Intercept add partner button ONLY if modal exists
+            addPartnerBtn.addEventListener('click', function(e) {
+                e.preventDefault(); // Only prevent default if we have a modal to show
+                console.log('Opening add partner modal');
+
+                // Clear the form
+                const form = document.getElementById('addPartnerForm');
+                if (form) form.reset();
+
+                addPartnerModal.classList.add('active');
+            });
+
+            // Close modal functionality
+            const modalCloses = document.querySelectorAll('.modal-close');
+            modalCloses.forEach(closeBtn => {
+                closeBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeAllModals();
+                });
+            });
+
+            // Close modal when clicking outside
+            [addPartnerModal, editPartnerModal].forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            });
+
+            // Edit partner functionality - only intercept if modal exists
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault(); // Only prevent default if we have a modal to show
+                    console.log('Opening edit partner modal');
+
+                    const partnerId = this.getAttribute('data-id');
+                    const firstName = this.getAttribute('data-first-name');
+                    const lastName = this.getAttribute('data-last-name');
+                    const email = this.getAttribute('data-email');
+                    const phone = this.getAttribute('data-phone');
+
+                    // Populate edit form
+                    const editForm = {
+                        id: document.getElementById('edit_partner_id'),
+                        firstName: document.getElementById('edit_first_name'),
+                        lastName: document.getElementById('edit_last_name'),
+                        email: document.getElementById('edit_email'),
+                        phone: document.getElementById('edit_phone')
+                    };
+
+                    if (editForm.id) editForm.id.value = partnerId || '';
+                    if (editForm.firstName) editForm.firstName.value = firstName || '';
+                    if (editForm.lastName) editForm.lastName.value = lastName || '';
+                    if (editForm.email) editForm.email.value = email || '';
+                    if (editForm.phone) editForm.phone.value = phone || '';
+
+                    editPartnerModal.classList.add('active');
+                });
+            });
+
+            // Form submission handlers - these don't prevent default, just add logging
+            const addPartnerForm = document.getElementById('addPartnerForm');
+            const editPartnerForm = document.getElementById('editPartnerForm');
+
+            if (addPartnerForm) {
+                addPartnerForm.addEventListener('submit', function() {
+                    console.log('Submitting add partner form to Flask route...');
+                });
+            }
+
+            if (editPartnerForm) {
+                editPartnerForm.addEventListener('submit', function() {
+                    console.log('Submitting edit partner form to Flask route...');
+                });
+            }
+        }
+
+        // Utility functions
+        function closeAllModals() {
+            const modals = document.querySelectorAll('.modal-overlay');
+            modals.forEach(modal => modal.classList.remove('active'));
+        }
+
+        function updateNoResultsMessage(visibleCount, searchTerm) {
+            const tbody = document.querySelector('.partners-table tbody');
+            let noResultsRow = document.querySelector('.no-results-row');
+
+            if (noResultsRow) {
+                noResultsRow.remove();
+            }
+
+            if (visibleCount === 0 && searchTerm !== '') {
+                noResultsRow = document.createElement('tr');
+                noResultsRow.className = 'no-results-row';
+                noResultsRow.innerHTML = `
+                    <td colspan="5" style="text-align: center; padding: 40px; color: #9ca3af; font-style: italic;">
+                        <div>
+                            <svg style="width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <div style="font-size: 16px; margin-bottom: 4px;">No partners found</div>
+                            <div style="font-size: 14px;">Try adjusting your search terms</div>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(noResultsRow);
+            }
+        }
+
+        function clearSearch() {
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                searchInput.value = '';
+                const tableRows = document.querySelectorAll('.partners-table tbody .table-row');
+                tableRows.forEach(row => row.style.display = '');
+                updateNoResultsMessage(tableRows.length, '');
+            }
+        }
+    </script>
+</body>
+{% endblock %}

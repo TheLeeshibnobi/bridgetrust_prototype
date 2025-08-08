@@ -1,5 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
+
+{% block content %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -349,18 +350,43 @@
 </head>
 <body>
     <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="
+                        padding: 12px;
+                        margin-bottom: 15px;
+                        border-radius: 5px;
+                        font-size: 14px;
+                        {% if category == 'success' %}
+                            background-color: #d1fae5;
+                            color: #065f46;
+                            border: 1px solid #10b981;
+                        {% elif category == 'error' %}
+                            background-color: #fee2e2;
+                            color: #991b1b;
+                            border: 1px solid #ef4444;
+                        {% else %}
+                            background-color: #f3f4f6;
+                            color: #374151;
+                            border: 1px solid #d1d5db;
+                        {% endif %}
+                    ">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <div class="header">
             <h1>System Settings</h1>
             <p>Setup and edit system settings and preferences</p>
         </div>
 
         <div class="tabs">
-            <button class="tab">Account Info</button>
-            <button class="tab active">Users</button>
-            <button class="tab">Packages</button>
-            <button class="tab">Building Info</button>
-            <button class="tab">Late Threshold</button>
-            <button class="tab">Advanced Notification</button>
+            <a href="{{ url_for('account_info_settings') }}"><div class="tab active">Account Info</div></a>
+            <a href="{{ url_for('user_settings') }}"><div class="tab">Users</div></a>
+            <a href="{{ url_for('partner_settings') }}"><div class="tab">Partners</div></a>
         </div>
 
         <div class="content">
@@ -368,13 +394,19 @@
                 <div class="section-header">
                     <h2 class="section-title">Users</h2>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <!-- Replaced input with plain text -->
+                        <!-- Location Filter -->
+                        <select id="locationFilter" class="form-select" style="width: 150px;">
+                            <option value="">All Locations</option>
+                            {% for loc in users|map(attribute='location')|reject('equalto', None)|map('lower')|unique %}
+                                <option value="{{ loc|title }}">{{ loc|title }}</option>
+                            {% endfor %}
+                        </select>
                         <span class="add-user-text" style="font-size: 16px; font-weight: 500;">Add user</span>
                         <button class="add-btn" id="addUserBtn">+</button>
                     </div>
                 </div>
 
-                <table class="users-table">
+                <table class="users-table" id="usersTable">
                     <thead>
                         <tr>
                             <th>Name of User</th>
@@ -387,51 +419,24 @@
                     </thead>
                     <tbody>
                         {% for user in users %}
-                        <tr data-user-id="{{ user.id }}">
-                            <td class="user-name">{{ user.user_name|title }}</td>
-                            <td class="user-email">{{ user.email }}</td>
-                            <td class="user-location">{{ user.location|title if user.location else '-' }}</td>
-                            <td class="user-position">{{ user.position|title if user.position else '-' }}</td>
-                            <td class="user-type">{{ user.user_type|title }}</td>
-                            <td class="chevron">›</td>
-                        </tr>
+                            <tr data-user-id="{{ user.id }}" data-location="{{ user.location|title if user.location else '' }}">
+                                <td class="user-name">{{ user.user_name|title }}</td>
+                                <td class="user-email">{{ user.email }}</td>
+                                <td class="user-location">{{ user.location|title if user.location else '-' }}</td>
+                                <td class="user-position">{{ user.position|title if user.position else '-' }}</td>
+                                <td class="user-type">{{ user.user_type|title }}</td>
+                                <td class="chevron">›</td>
+                            </tr>
                         {% endfor %}
                         {% if not users %}
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
-                                No users found
-                            </td>
-                        </tr>
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
+                                    No users found
+                                </td>
+                            </tr>
                         {% endif %}
                     </tbody>
                 </table>
-
-                <div class="section-divider"></div>
-
-                {% if users|selectattr('location', 'equalto', 'lusaka')|list %}
-                <div class="expandable-section">
-                    <div class="expandable-header">
-                        <span class="expand-icon">▼</span>
-                        <span class="expandable-title">Lusaka Branch</span>
-                    </div>
-                    <div class="expandable-content">
-                        <table class="users-table">
-                            <tbody>
-                                {% for user in users if user.location and user.location.lower() == 'lusaka' %}
-                                <tr data-user-id="{{ user.id }}">
-                                    <td class="user-name">{{ user.user_name|title }}</td>
-                                    <td class="user-email">{{ user.email }}</td>
-                                    <td class="user-location">{{ user.location|title }}</td>
-                                    <td class="user-position">{{ user.position|title if user.position else '-' }}</td>
-                                    <td class="user-type">{{ user.user_type|title }}</td>
-                                    <td class="chevron">›</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>
@@ -445,6 +450,7 @@
             </div>
 
             <form id="addUserForm" method="POST" action="/add_user">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label" for="user_name">User Name</label>
@@ -503,6 +509,21 @@
     </div>
 
     <script>
+        // Location filter logic
+        document.getElementById('locationFilter').addEventListener('change', function () {
+            let selectedLocation = this.value.toLowerCase();
+            let rows = document.querySelectorAll('#usersTable tbody tr');
+
+            rows.forEach(row => {
+                let rowLocation = row.getAttribute('data-location').toLowerCase();
+                if (!selectedLocation || rowLocation === selectedLocation) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
         // Add basic functionality for tabs
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
@@ -566,4 +587,4 @@
         });
     </script>
 </body>
-</html>
+{% endblock %}

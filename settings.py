@@ -76,7 +76,74 @@ class Settings:
         except Exception as e:
             print(f'Exception: {e}')
 
-test = Settings()
-print(
-    test.load_users()
-)
+
+    def add_user(self, form_data):
+        """adds a user from the form data"""
+        user_data = {
+            'user_name' : form_data['user_name'],
+            'email' : form_data['email'],
+            'user_type' : form_data['user_type'],
+            'position' : form_data['position'],
+            'nrc_number' : form_data['nrc_number'],
+            'date_of_birth' : form_data['date_of_birth'],
+            'password' : form_data['secret_key'],
+            'location' : form_data['location']
+        }
+
+        try:
+            response = self.supabase.table('users').insert(user_data).execute()
+            return response.data
+
+        except Exception as e:
+            print(f'Exception: {e}')
+            return Exception
+
+
+    def load_partners(self):
+        """returns users data"""
+        try:
+            response = self.supabase.table('partners').select('*').execute()
+            return response.data
+
+        except Exception as e:
+            print(f'Exception: {e}')
+
+
+    def update_partner(self, form_data):
+        """updates the details of a partner in the database"""
+
+        partner_data = {
+            'id' : form_data['partner_id'],
+            'first_name' : form_data['first_name'],
+            'last_name' : form_data['last_name'],
+            'email' : form_data['email'],
+            'phone' : form_data['phone']
+        }
+
+        try:
+            response = self.supabase.table('partners').update(partner_data).eq('id', form_data['partner_id']).execute()
+            return response.data
+
+        except Exception as e:
+            print(f'Exception: {e}')
+            return Exception
+
+    def add_partner(self, form_data):
+        """adds a partner in the database"""
+
+        partner_data = {
+            'first_name': form_data['first_name'],
+            'last_name': form_data['last_name'],
+            'email': form_data['email'],
+            'phone': form_data['phone']
+        }
+
+        try:
+            response = self.supabase.table('partners').insert(partner_data).execute()
+            return response.data
+
+        except Exception as e:
+            print(f'Exception: {e}')
+            return Exception
+
+
