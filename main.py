@@ -826,6 +826,74 @@ def user_settings():
     return render_template('user_settings.html', users = users)
 
 
+@app.route('/add_user', methods=['POST', 'GET'])
+def add_user():
+    if request.method == 'POST':
+        # Get the entire form data as a dictionary
+        form_data = request.form.to_dict()
+
+        # Generate random password/secret key
+        secret_key = secrets.token_hex(8)  # 16-character hex string
+        form_data['secret_key'] = secret_key  # Add to the form data
+
+        print(form_data)  # Debugging — shows all form fields including key
+
+        # Upload the data
+        settings_manager = Settings()
+        result = settings_manager.add_user(form_data)
+        if not result:
+            flash('Failed to add user', 'error')
+        else:
+            flash(f'User added successfully! Send them this key as their password: {secret_key}', 'success')
+
+        users = settings_manager.load_users()
+        return render_template('user_settings.html', users=users)
+
+    return render_template('user_settings.html')
+
+@app.route('/partner_settings', methods=['GET'])  # Only GET for this route
+def partner_settings():
+    settings_manager = Settings()
+    partners = settings_manager.load_partners()
+    return render_template('partners_settings.html', partners=partners)
+
+
+@app.route('/update_partner', methods=['POST'])
+def update_partner():
+    settings_manager = Settings()
+
+    # Get form data
+    form_data = request.form.to_dict()
+    result = settings_manager.update_partner(form_data)
+
+    if not result:
+        flash('Failed to update partner details', 'error')
+    else:
+        flash('Partner details have been updated', 'success')
+
+    # Redirect instead of rendering template
+    return redirect(url_for('partner_settings'))
+
+
+@app.route('/add_partner', methods=['POST'])
+def add_partner():
+    settings_manager = Settings()
+
+    # Get the entire form data as a dictionary
+    form_data = request.form.to_dict()
+    print(form_data)  # Debugging
+
+    # Upload the data
+    result = settings_manager.add_partner(form_data)
+    if not result:
+        flash('Failed to add partner', 'error')
+    else:
+        flash('Partner added successfully!', 'success')
+
+    # Redirect instead of rendering template
+    return redirect(url_for('partner_settings'))
+
+
 
 @app.route('/logout')
 def logout():
