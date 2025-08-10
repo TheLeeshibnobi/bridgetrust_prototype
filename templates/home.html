@@ -13,11 +13,9 @@
     body {
         font-family: "IBM Plex Sans Devanagari", Helvetica;
         background-color: #f8f9fa;
-        /* Removed fixed height and hidden overflow */
     }
 
     .dashboard-container {
-        /* Changed to allow content to grow and scroll */
         max-height: 100vh;
         padding: 16px;
         padding-bottom: 24px;
@@ -32,7 +30,6 @@
         justify-content: flex-end;
         margin-bottom: 20px;
         flex-shrink: 0;
-        /* Updated height for word logo */
         height: 40px;
         padding-right: 20px;
     }
@@ -190,6 +187,20 @@
         margin-bottom: 4px;
     }
 
+    .period-display label {
+        font-weight: 500;
+        color: #000000;
+        font-size: 12px;
+    }
+
+    .period-display select {
+        padding: 4px 8px;
+        border: 1px solid #9ca0a4;
+        border-radius: 4px;
+        font-size: 12px;
+        background-color: #ffffff;
+    }
+
     .quarter-text {
         font-weight: 700;
         color: #000000;
@@ -265,41 +276,16 @@
 
     .bar {
         position: relative;
-        width: 12%;
+        width: 23%;
         background-color: #eaedf1;
         border-radius: 6px 6px 0 0;
         align-self: stretch;
         transition: height 0.3s ease;
+        min-height: 10px;
     }
 
-    .bar:nth-child(1) { height: 28.88%; }
-    .bar:nth-child(2) { height: 33.88%; }
-    .bar:nth-child(3) { height: 37.22%; }
-    .bar:nth-child(4) { height: 74.44%; }
-    .bar:nth-child(5) { height: 74.44%; }
-    .bar:nth-child(6) { height: 76.66%; }
-    .bar:nth-child(7) { height: 93.33%; background-color: #e9edf0; }
-
-    .bar-highlighted {
-        position: relative;
-        width: 12%;
-        height: 100%;
-        background-color: #eff1f5;
-        border-radius: 6px;
-        border: 1px solid #003049;
-        align-self: stretch;
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-    }
-
-    .bar-highlighted::after {
-        content: '';
-        position: relative;
-        width: 90%;
-        height: 93.33%;
+    .bar.highlighted {
         background-color: #003049;
-        border-radius: 6px 6px 0 0;
     }
 
     .y-axis {
@@ -333,57 +319,6 @@
         bottom: 20px;
         left: 50px;
         pointer-events: none;
-    }
-
-    .goal-line {
-        position: relative;
-        height: 12px;
-        border-top: 1px dashed #003049;
-        top: 10%;
-        width: 100%;
-    }
-
-    .goal-indicator {
-        position: absolute;
-        top: -6px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        align-items: center;
-        gap: 2px;
-        padding: 2px 6px;
-        background-color: #eaedf1;
-        border-radius: 4px;
-        pointer-events: auto;
-    }
-
-    .goal-text {
-        font-family: "Inter", Helvetica;
-        font-weight: 400;
-        color: #003049;
-        font-size: 7px;
-        margin: 0;
-    }
-
-    .current-indicator {
-        position: absolute;
-        top: 25%;
-        left: 88%;
-        display: flex;
-        align-items: center;
-        padding: 2px 5px;
-        background-color: #003049;
-        border-radius: 8px;
-        transform: translateX(-50%);
-        pointer-events: auto;
-    }
-
-    .current-text {
-        font-family: "Inter", Helvetica;
-        font-weight: 600;
-        color: #ffffff;
-        font-size: 7px;
-        margin: 0;
     }
 
     .x-axis {
@@ -760,6 +695,29 @@
         color: #6b7280;
     }
 
+    /* Chart loading state */
+    .chart-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.9);
+        z-index: 10;
+    }
+
+    .loading-spinner {
+        width: 30px;
+        height: 30px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #003049;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
     /* Focus styles for accessibility */
     button:focus,
     a:focus {
@@ -859,7 +817,7 @@
                                 <svg class="arrow-icon" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M2 8L5 2L8 8" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
-                                <h2 class="card-title">Revenue Recovery</h2>
+                                <h2 class="card-title">Interest Earned Per Quarter</h2>
                                 <svg class="arrow-icon" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M2 8L5 2L8 8" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
@@ -867,19 +825,23 @@
                         </div>
                         <div class="metrics-row">
                             <div class="percentage-badge">
-                                <p class="percentage-text">+8%</p>
+                                <p class="percentage-text" id="growth-percentage">+0%</p>
                             </div>
                             <div class="legend">
                                 <div class="legend-dot"></div>
-                                <p class="legend-text">Collected:</p>
-                                <p class="legend-text">Balance:</p>
+                                <p class="legend-text">Interest Earned by Quarter</p>
                             </div>
                         </div>
                     </div>
                     <div class="card-controls">
                         <div class="period-display">
-                            <p class="quarter-text">Q1</p>
-                            <p class="year-text">2025</p>
+                            <label for="year-select">Select Year:</label>
+                            <select id="year-select" name="year" onchange="updateChart()">
+                                <option value="2025" {{ 'selected' if selected_year == 2025 else '' }}>2025</option>
+                                <option value="2024" {{ 'selected' if selected_year == 2024 else '' }}>2024</option>
+                                <option value="2023" {{ 'selected' if selected_year == 2023 else '' }}>2023</option>
+                                <option value="2022" {{ 'selected' if selected_year == 2022 else '' }}>2022</option>
+                            </select>
                         </div>
                         <div class="control-buttons">
                             <button class="compare-btn">Compare</button>
@@ -898,17 +860,22 @@
                 </div>
 
                 <div class="chart-container">
+                    <div class="chart-loading" id="chart-loading" style="display: none;">
+                        <div class="loading-spinner"></div>
+                    </div>
                     <div class="chart-wrapper">
-                        <div class="y-axis"></div>
-                        <div class="chart-bars">
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar-highlighted"></div>
+                        <div class="y-axis" id="y-axis">
+                            <!-- Y-axis labels will be populated by JavaScript -->
                         </div>
+                        <div class="chart-bars" id="chart-bars">
+                            <!-- Bars will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <div class="x-axis">
+                        <div class="x-axis-label">Q1</div>
+                        <div class="x-axis-label">Q2</div>
+                        <div class="x-axis-label">Q3</div>
+                        <div class="x-axis-label">Q4</div>
                     </div>
                 </div>
             </div>
@@ -917,7 +884,7 @@
                 <div class="summary-header">
                     <h2 class="summary-title">Disbursed Capital Summary</h2>
                     <div class="growth-badge">
-                        <p class="growth-text">+8%</p>
+                        <p class="growth-text">+{{nominal_rate}}% per month</p>
                     </div>
                 </div>
 
@@ -947,15 +914,15 @@
                         <h3 class="column-title">What you're still owed*</h3>
                         <div class="summary-row">
                             <p class="summary-label">Principal</p>
-                            <p class="summary-value">359,000</p>
+                            <p class="summary-value">{{outstanding_principal_balance}}</p>
                         </div>
                         <div class="summary-row">
                             <p class="summary-label">Interest</p>
-                            <p class="summary-value">102,000</p>
+                            <p class="summary-value">{{outstanding_interest }}</p>
                         </div>
                         <div class="summary-row">
                             <p class="summary-total-label">Total Balance</p>
-                            <p class="summary-total-value">461,000</p>
+                            <p class="summary-total-value">{{total_owed}}</p>
                         </div>
                     </div>
                 </div>
@@ -970,7 +937,7 @@
 
         <aside class="updates-sidebar">
             <div class="updates-header">
-                <h2 class="updates-title">Updates</h2>
+                <h2 class="updates-title">Notifications</h2>
                 <div class="updates-controls">
                     <button class="mark-read-btn">Mark all as read</button>
                     <div class="notification-count">
@@ -1035,6 +1002,148 @@
 </div>
 
 <script>
+// Store the current interest data
+let currentInterestData = {{ interest_per_quarter | tojson }};
+
+// Chart configuration
+const chartConfig = {
+    colors: {
+        default: '#eaedf1',
+        highlighted: '#003049'
+    }
+};
+
+// Initialize the chart on page load
+document.addEventListener('DOMContentLoaded', function() {
+    renderChart(currentInterestData);
+});
+
+function formatCurrency(amount) {
+    return 'K' + parseFloat(amount).toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    });
+}
+
+function calculateGrowthPercentage(data) {
+    const values = Object.values(data);
+    const total = values.reduce((sum, val) => sum + val, 0);
+
+    // Simple growth calculation - you can modify this logic based on your needs
+    const average = total / 4;
+    const lastQuarter = values[3]; // Q4
+
+    if (average === 0) return 0;
+    const growth = ((lastQuarter - average) / average * 100).toFixed(0);
+    return growth > 0 ? `+${growth}%` : `${growth}%`;
+}
+
+function renderChart(data) {
+    const chartBars = document.getElementById('chart-bars');
+    const yAxis = document.getElementById('y-axis');
+    const growthElement = document.getElementById('growth-percentage');
+
+    if (!chartBars || !yAxis || !data) {
+        console.error('Chart elements not found or data is null');
+        return;
+    }
+
+    // Clear existing content
+    chartBars.innerHTML = '';
+    yAxis.innerHTML = '';
+
+    // Get values and find max for scaling
+    const quarters = ['first quarter', 'second quarter', 'third quarter', 'fourth quarter'];
+    const values = quarters.map(q => data[q] || 0);
+    const maxValue = Math.max(...values, 1); // Ensure at least 1 to avoid division by zero
+
+    // Create Y-axis labels (5 levels)
+    const yAxisLevels = 5;
+    for (let i = 0; i < yAxisLevels; i++) {
+        const value = (maxValue / (yAxisLevels - 1)) * (yAxisLevels - 1 - i);
+        const label = document.createElement('div');
+        label.className = 'y-axis-label';
+        label.textContent = formatCurrency(value);
+        yAxis.appendChild(label);
+    }
+
+    // Create bars
+    quarters.forEach((quarter, index) => {
+        const value = values[index];
+        const height = maxValue > 0 ? (value / maxValue) * 100 : 10;
+
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = `${Math.max(height, 5)}%`; // Minimum 5% height for visibility
+
+        // Highlight the bar with highest value
+        if (value === Math.max(...values) && value > 0) {
+            bar.classList.add('highlighted');
+        }
+
+        // Add hover effect with value display
+        bar.title = `${quarter.charAt(0).toUpperCase() + quarter.slice(1)}: ${formatCurrency(value)}`;
+
+        chartBars.appendChild(bar);
+    });
+
+    // Update growth percentage
+    if (growthElement) {
+        growthElement.textContent = calculateGrowthPercentage(data);
+    }
+}
+
+function updateChart() {
+    const yearSelect = document.getElementById('year-select');
+    const selectedYear = yearSelect.value;
+    const loadingElement = document.getElementById('chart-loading');
+
+    // Show loading state
+    if (loadingElement) {
+        loadingElement.style.display = 'flex';
+    }
+
+    // Fetch new data
+    fetch(`/get_interest_data/${selectedYear}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(result => {
+        // Hide loading state
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+
+        if (result.success) {
+            currentInterestData = result.data;
+            renderChart(currentInterestData);
+        } else {
+            console.error('Error fetching data:', result.error);
+            showFlashMessage('Failed to load interest data for the selected year.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+
+        // Hide loading state
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+
+        showFlashMessage('An error occurred while fetching chart data.', 'error');
+    });
+}
+
+// Notification deletion functions (keeping existing functionality)
 function deleteNotification(event, notificationId) {
     // Prevent the parent link from being triggered
     event.preventDefault();
@@ -1056,7 +1165,7 @@ function deleteNotification(event, notificationId) {
 
     // Send DELETE request to Flask route
     fetch(`/delete_notification/${notificationId}`, {
-        method: 'GET', // Your Flask route uses GET method
+        method: 'GET',
         headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
@@ -1210,4 +1319,4 @@ document.addEventListener('click', function(event) {
 });
 </script>
 
-{% endblock %}.w
+{% endblock %}

@@ -116,11 +116,13 @@ def login():
 
 @app.route('/home')
 def home():
-
     # Check if user is logged in and has a user type
     if 'email' not in session or 'user_type' not in session:
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('login'))
+
+    # Get the year from query parameters, default to current year
+    selected_year = request.args.get('year', default=2025, type=int)
 
     home_manager = Home()
     notification_manager = Notifications()
@@ -128,13 +130,55 @@ def home():
     interest_earned = home_manager.interest_earned()
     total_receivables = home_manager.total_receivables()
     notifications = notification_manager.load_notifications()
+    interest_per_quarter = home_manager.interest_per_quarter(selected_year)
+    nominal_rate = home_manager.get_nominal_rate()
+    outstanding_principal_balance = home_manager.total_loan_disbursed() - home_manager.total_principal_repaid()
+
+    # calaculate expected interest
+    df = home_manager.get_repayment_summary_all()
+    total_expected_interest = df['Interest'].sum()
+
+    outstanding_interest = total_expected_interest - float(home_manager.total_interest_paid())
+    if outstanding_interest < 0:
+        outstanding_interest = 0  # just in case overpaid or rounding
+
+    total_owed = outstanding_principal_balance + outstanding_interest
 
     return render_template('home.html',
                            total_principal_given=total_principal_given,
+                           nominal_rate = nominal_rate,
                            interest_earned=interest_earned,
                            total_receivables=total_receivables,
-                           notifications = notifications
-                           )
+                           notifications=notifications,
+                           interest_per_quarter=interest_per_quarter,
+                           outstanding_principal_balance  = outstanding_principal_balance,
+                           outstanding_interest = outstanding_interest,
+                           total_owed = total_owed,
+                           selected_year=selected_year)
+
+
+@app.route('/get_interest_data/<int:year>')
+def get_interest_data(year):
+    """API endpoint to get interest data for a specific year"""
+    if 'email' not in session or 'user_type' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    try:
+        home_manager = Home()
+        interest_per_quarter = home_manager.interest_per_quarter(year)
+
+        if interest_per_quarter is None:
+            return jsonify({'error': 'Failed to fetch data'}), 500
+
+        return jsonify({
+            'success': True,
+            'data': interest_per_quarter,
+            'year': year
+        })
+
+    except Exception as e:
+        print(f"Error fetching interest data: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 

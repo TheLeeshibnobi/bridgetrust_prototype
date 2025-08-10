@@ -1382,7 +1382,3 @@ class Loans:
         # Create DataFrame
         loan_df = pd.DataFrame(rows, columns=columns)
         return loan_df
-
-
-test = Loans()
-print(test.get_repayment_summary('54317b45-edcd-4796-aaa2-a99f7e1efccb'))
