@@ -650,15 +650,23 @@
         box-shadow: 0 2px 8px rgba(0, 48, 73, 0.1);
     }
 
+    .notification.deleting {
+        opacity: 0.5;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
     .notification-content {
         display: flex;
         gap: 10px;
+        align-items: flex-start;
     }
 
     .notification-icon {
         width: 16px;
         height: 16px;
         flex-shrink: 0;
+        margin-top: 2px;
     }
 
     .notification-body {
@@ -666,23 +674,11 @@
         display: flex;
         flex-direction: column;
         gap: 4px;
-    }
-
-    .notification-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
+        min-width: 0;
     }
 
     .notification-text {
         flex: 1;
-    }
-
-    .notification-title {
-        font-weight: 600;
-        color: #000000;
-        font-size: 13px;
-        margin: 0 0 3px 0;
     }
 
     .notification-description {
@@ -691,20 +687,34 @@
         font-size: 12px;
         line-height: 15px;
         margin: 0;
+        word-wrap: break-word;
     }
 
-    .notification-description .highlight {
-        font-weight: 600;
-    }
-
-    .close-btn {
+    .delete-notification-btn {
+        position: relative;
+        z-index: 10;
         background: none;
         border: none;
         cursor: pointer;
-        padding: 0;
-        width: 12px;
-        height: 12px;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        width: 20px;
+        height: 20px;
         flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .delete-notification-btn:hover {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .delete-notification-btn svg {
+        width: 14px;
+        height: 14px;
     }
 
     .notification-action {
@@ -720,6 +730,34 @@
         color: #000000;
         font-size: 10px;
         text-decoration: underline;
+    }
+
+    .no-notifications {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        text-align: center;
+        color: #6b7280;
+        background-color: #f9fafb;
+        border: 2px dashed #d1d5db;
+        border-radius: 8px;
+        margin: 10px 0;
+    }
+
+    .no-notifications-icon {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+        opacity: 0.7;
+    }
+
+    .no-notifications-text {
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0;
+        color: #6b7280;
     }
 
     /* Focus styles for accessibility */
@@ -769,180 +807,407 @@
             flex-direction: column;
             gap: 16px;
         }
+
+        .no-notifications {
+            padding: 30px 15px;
+        }
+
+        .no-notifications-icon {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 12px;
+        }
+
+        .no-notifications-text {
+            font-size: 14px;
+        }
+    }
+
+    /* Loading overlay and animations */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
     }
 </style>
-</head>
-<body>
-    <div class="dashboard-container">
-        <div class="dashboard-header" style="display: flex; align-items: center; justify-content: space-between;">
-            <h1 style="font-size: 24px; font-weight: 700; color: #003049;">Your Logo</h1>
-            <div class="capital-display" style="font-size: 14px; text-align: right;">
-                <p class="capital-amount" style="margin: 0; font-size: 18px;">K1,054,200.00</p>
-                <p class="capital-label" style="margin: 0; font-size: 12px;">Available Capital</p>
-            </div>
+
+<div class="dashboard-container">
+    <div class="dashboard-header" style="display: flex; align-items: center; justify-content: space-between;">
+        <h1 style="font-size: 24px; font-weight: 700; color: #003049;">Bridge Trust</h1>
+        <div class="capital-display" style="font-size: 14px; text-align: right;">
+            <p class="capital-amount" style="margin: 0; font-size: 18px;">K1,054,200.00</p>
+            <p class="capital-label" style="margin: 0; font-size: 12px;">Available Capital</p>
         </div>
+    </div>
 
-        <div class="main-content-home">
-            <section class="charts-section">
-                <div class="revenue-recovery-card">
-                    <div class="card-header">
-                        <div class="card-title-section">
-                            <div class="title-row">
-                                <div class="title-with-arrows">
-                                    <svg class="arrow-icon" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M2 8L5 2L8 8" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                    <h2 class="card-title">Revenue Recovery</h2>
-                                    <svg class="arrow-icon" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M2 8L5 2L8 8" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="metrics-row">
-                                <div class="percentage-badge">
-                                    <p class="percentage-text">+8%</p>
-                                </div>
-                                <div class="legend">
-                                    <div class="legend-dot"></div>
-                                    <p class="legend-text">Collected:</p>
-                                    <p class="legend-text">Balance:</p>
-                                </div>
+    <div class="main-content-home">
+        <section class="charts-section">
+            <div class="revenue-recovery-card">
+                <div class="card-header">
+                    <div class="card-title-section">
+                        <div class="title-row">
+                            <div class="title-with-arrows">
+                                <svg class="arrow-icon" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2 8L5 2L8 8" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <h2 class="card-title">Revenue Recovery</h2>
+                                <svg class="arrow-icon" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2 8L5 2L8 8" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
                             </div>
                         </div>
-                        <div class="card-controls">
-                            <div class="period-display">
-                                <p class="quarter-text">Q1</p>
-                                <p class="year-text">2025</p>
+                        <div class="metrics-row">
+                            <div class="percentage-badge">
+                                <p class="percentage-text">+8%</p>
                             </div>
-                            <div class="control-buttons">
-                                <button class="compare-btn">Compare</button>
-                                <button class="icon-btn" aria-label="Settings">
-                                    <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M6 7.5C6.83 7.5 7.5 6.83 7.5 6C7.5 5.17 6.83 4.5 6 4.5C5.17 4.5 4.5 5.17 4.5 6C4.5 6.83 5.17 7.5 6 7.5Z" stroke="#000" stroke-width="0.75"/>
-                                    </svg>
-                                </button>
-                                <button class="icon-btn" aria-label="Maximize">
-                                    <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M2 2H10V10H2V2Z" stroke="#000" stroke-width="0.75"/>
-                                    </svg>
-                                </button>
+                            <div class="legend">
+                                <div class="legend-dot"></div>
+                                <p class="legend-text">Collected:</p>
+                                <p class="legend-text">Balance:</p>
                             </div>
                         </div>
                     </div>
-
-                    <div class="chart-container">
-                        <div class="chart-wrapper">
-                            <div class="y-axis"></div>
-                            <div class="chart-bars">
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar-highlighted"></div>
-                            </div>
+                    <div class="card-controls">
+                        <div class="period-display">
+                            <p class="quarter-text">Q1</p>
+                            <p class="year-text">2025</p>
+                        </div>
+                        <div class="control-buttons">
+                            <button class="compare-btn">Compare</button>
+                            <button class="icon-btn" aria-label="Settings">
+                                <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 7.5C6.83 7.5 7.5 6.83 7.5 6C7.5 5.17 6.83 4.5 6 4.5C5.17 4.5 4.5 5.17 4.5 6C4.5 6.83 5.17 7.5 6 7.5Z" stroke="#000" stroke-width="0.75"/>
+                                </svg>
+                            </button>
+                            <button class="icon-btn" aria-label="Maximize">
+                                <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2 2H10V10H2V2Z" stroke="#000" stroke-width="0.75"/>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="capital-summary-card">
-                    <div class="summary-header">
-                        <h2 class="summary-title">Disbursed Capital Summary</h2>
-                        <div class="growth-badge">
-                            <p class="growth-text">+8%</p>
+                <div class="chart-container">
+                    <div class="chart-wrapper">
+                        <div class="y-axis"></div>
+                        <div class="chart-bars">
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar-highlighted"></div>
                         </div>
                     </div>
-
-                    <div class="progress-bar">
-                        <div class="progress-fill"></div>
-                        <div class="progress-remaining"></div>
-                    </div>
-
-                    <div class="summary-content">
-                        <div class="summary-column">
-                            <h3 class="column-title">What you've given out*</h3>
-                            <div class="summary-row">
-                                <p class="summary-label">Principal</p>
-                                <p class="summary-value">{{ total_principal_given }}</p>
-                            </div>
-                            <div class="summary-row">
-                                <p class="summary-label">Interest earned</p>
-                                <p class="summary-value">{{ interest_earned }}</p>
-                            </div>
-                            <div class="summary-row">
-                                <p class="summary-total-label">Total Receivable</p>
-                                <p class="summary-total-value">{{ total_receivables }}</p>
-                            </div>
-                        </div>
-
-                        <div class="summary-column">
-                            <h3 class="column-title">What you're still owed*</h3>
-                            <div class="summary-row">
-                                <p class="summary-label">Principal</p>
-                                <p class="summary-value">359,000</p>
-                            </div>
-                            <div class="summary-row">
-                                <p class="summary-label">Interest</p>
-                                <p class="summary-value">102,000</p>
-                            </div>
-                            <div class="summary-row">
-                                <p class="summary-total-label">Total Balance</p>
-                                <p class="summary-total-value">461,000</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <a href="{{ url_for('organisation_transactions') }}">
-                        <button class="view-all-btn">
-                            <span class="view-all-text">View all Transactions</span>
-                        </button>
-                    </a>
                 </div>
-            </section>
+            </div>
 
-            <aside class="updates-sidebar">
-                <div class="updates-header">
-                    <h2 class="updates-title">Updates</h2>
-                    <div class="updates-controls">
-                        <button class="mark-read-btn">Mark all as read</button>
-                        <div class="notification-count">
-                            <span class="count-text">3</span>
+            <div class="capital-summary-card">
+                <div class="summary-header">
+                    <h2 class="summary-title">Disbursed Capital Summary</h2>
+                    <div class="growth-badge">
+                        <p class="growth-text">+8%</p>
+                    </div>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                    <div class="progress-remaining"></div>
+                </div>
+
+                <div class="summary-content">
+                    <div class="summary-column">
+                        <h3 class="column-title">What you've given out*</h3>
+                        <div class="summary-row">
+                            <p class="summary-label">Principal</p>
+                            <p class="summary-value">{{ total_principal_given }}</p>
+                        </div>
+                        <div class="summary-row">
+                            <p class="summary-label">Interest earned</p>
+                            <p class="summary-value">{{ interest_earned }}</p>
+                        </div>
+                        <div class="summary-row">
+                            <p class="summary-total-label">Total Receivable</p>
+                            <p class="summary-total-value">{{ total_receivables }}</p>
+                        </div>
+                    </div>
+
+                    <div class="summary-column">
+                        <h3 class="column-title">What you're still owed*</h3>
+                        <div class="summary-row">
+                            <p class="summary-label">Principal</p>
+                            <p class="summary-value">359,000</p>
+                        </div>
+                        <div class="summary-row">
+                            <p class="summary-label">Interest</p>
+                            <p class="summary-value">102,000</p>
+                        </div>
+                        <div class="summary-row">
+                            <p class="summary-total-label">Total Balance</p>
+                            <p class="summary-total-value">461,000</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="notifications-list">
+                <a href="{{ url_for('organisation_transactions') }}">
+                    <button class="view-all-btn">
+                        <span class="view-all-text">View all Transactions</span>
+                    </button>
+                </a>
+            </div>
+        </section>
+
+        <aside class="updates-sidebar">
+            <div class="updates-header">
+                <h2 class="updates-title">Updates</h2>
+                <div class="updates-controls">
+                    <button class="mark-read-btn">Mark all as read</button>
+                    <div class="notification-count">
+                        <span class="count-text">{{ notifications|length if notifications else 0 }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notifications-list">
+                {% if notifications %}
                     {% for notification in notifications[:3] %}
                     <a href="#" data-notification-id="{{ notification.id }}" data-borrower-id="{{ notification.borrower_id }}" data-user-id="{{ notification.user_id }}" data-request-id="{{ notification.request_id }}" data-created-at="{{ notification.created_at }}" style="text-decoration: none; color: inherit;">
-                        <article class="notification">
+                        <article class="notification" id="notification-{{ notification.id }}">
                             <div class="notification-content">
                                 <svg class="notification-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <circle cx="8" cy="8" r="7" fill="none" stroke="#FF9800" stroke-width="1"/>
                                     <path d="M8 4V8L10 10" stroke="#FF9800" stroke-width="1" stroke-linecap="round"/>
                                 </svg>
                                 <div class="notification-body">
-                                    <div class="notification-header">
-                                        <div class="notification-text">
-                                            <p class="notification-description">
-                                                {{ notification.notification | replace('\n', '<br>') | safe }}
-                                            </p>
-                                        </div>
-                                        <button class="close-btn" aria-label="Close notification" onclick="event.preventDefault(); event.stopPropagation();">
-                                            <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M9 3L3 9M3 3L9 9" stroke="#000" stroke-width="1" stroke-linecap="round"/>
-                                            </svg>
-                                        </button>
+                                    <div class="notification-text">
+                                        <p class="notification-description">
+                                            {{ notification.notification | replace('\n', '<br>') | safe }}
+                                        </p>
                                     </div>
                                 </div>
+                                <button class="close-btn delete-notification-btn"
+                                        data-notification-id="{{ notification.id }}"
+                                        aria-label="Close notification"
+                                        onclick="deleteNotification(event, '{{ notification.id }}')">
+                                    <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M10.5 3.5L3.5 10.5M3.5 3.5L10.5 10.5" stroke="#666" stroke-width="1.5" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
                             </div>
                         </article>
                     </a>
                     {% endfor %}
-                </div>
+                {% else %}
+                    <div class="no-notifications" id="no-notifications-message">
+                        <svg class="no-notifications-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="9" y1="9" x2="15" y2="15" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="15" y1="9" x2="9" y2="15" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <p class="no-notifications-text">You have no notifications</p>
+                    </div>
+                {% endif %}
+            </div>
+        </aside>
+    </div>
+</div>
 
-            </aside>
+<!-- Loading overlay -->
+<div id="notification-loading" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.1); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <span>Deleting notification...</span>
         </div>
     </div>
-</body>
-{% endblock %}
+</div>
+
+<script>
+function deleteNotification(event, notificationId) {
+    // Prevent the parent link from being triggered
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Get the notification element
+    const notificationElement = document.getElementById(`notification-${notificationId}`);
+    const loadingOverlay = document.getElementById('notification-loading');
+
+    // Add visual feedback
+    if (notificationElement) {
+        notificationElement.classList.add('deleting');
+    }
+
+    // Show loading overlay
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'block';
+    }
+
+    // Send DELETE request to Flask route
+    fetch(`/delete_notification/${notificationId}`, {
+        method: 'GET', // Your Flask route uses GET method
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        // Hide loading overlay
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
+
+        if (response.ok) {
+            // Success - remove the notification from DOM
+            if (notificationElement) {
+                notificationElement.style.transition = 'all 0.3s ease';
+                notificationElement.style.transform = 'translateX(100%)';
+                notificationElement.style.opacity = '0';
+
+                setTimeout(() => {
+                    notificationElement.remove();
+
+                    // Check if there are no notifications left
+                    const remainingNotifications = document.querySelectorAll('.notification');
+                    if (remainingNotifications.length === 0) {
+                        const notificationsList = document.querySelector('.notifications-list');
+                        if (notificationsList) {
+                            notificationsList.innerHTML = `
+                                <div class="no-notifications" id="no-notifications-message">
+                                    <svg class="no-notifications-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <line x1="9" y1="9" x2="15" y2="15" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
+                                        <line x1="15" y1="9" x2="9" y2="15" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    <p class="no-notifications-text">You have no notifications</p>
+                                </div>
+                            `;
+                        }
+
+                        // Update notification count to 0
+                        const countElement = document.querySelector('.count-text');
+                        if (countElement) {
+                            countElement.textContent = '0';
+                        }
+                    } else {
+                        // Update notification count
+                        const countElement = document.querySelector('.count-text');
+                        if (countElement) {
+                            countElement.textContent = remainingNotifications.length.toString();
+                        }
+                    }
+                }, 300);
+            }
+
+            // Show success message
+            showFlashMessage('Notification deleted successfully.', 'success');
+        } else {
+            // Error handling
+            console.error('Failed to delete notification');
+
+            // Remove deleting class to restore normal state
+            if (notificationElement) {
+                notificationElement.classList.remove('deleting');
+            }
+
+            // Show error message
+            showFlashMessage('Failed to delete notification. Please try again.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+
+        // Hide loading overlay
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
+
+        // Remove deleting class to restore normal state
+        if (notificationElement) {
+            notificationElement.classList.remove('deleting');
+        }
+
+        // Show error message
+        showFlashMessage('An error occurred while deleting the notification.', 'error');
+    });
+}
+
+function showFlashMessage(message, type) {
+    // Create flash message element
+    const flashDiv = document.createElement('div');
+    flashDiv.className = `flash-message flash-${type}`;
+    flashDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 4px;
+        color: white;
+        z-index: 1001;
+        max-width: 300px;
+        word-wrap: break-word;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+    `;
+
+    if (type === 'success') {
+        flashDiv.style.backgroundColor = '#10b981';
+    } else if (type === 'error') {
+        flashDiv.style.backgroundColor = '#ef4444';
+    }
+
+    flashDiv.textContent = message;
+
+    document.body.appendChild(flashDiv);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        flashDiv.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (flashDiv.parentNode) {
+                flashDiv.parentNode.removeChild(flashDiv);
+            }
+        }, 300);
+    }, 5000);
+}
+
+// Optional: Add keyboard support for accessibility
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const loadingOverlay = document.getElementById('notification-loading');
+        if (loadingOverlay && loadingOverlay.style.display === 'block') {
+            // Don't hide loading overlay on escape - let the request complete
+            return;
+        }
+    }
+});
+
+// Optional: Click anywhere to dismiss flash messages
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('flash-message')) {
+        event.target.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (event.target.parentNode) {
+                event.target.parentNode.removeChild(event.target);
+            }
+        }, 300);
+    }
+});
+</script>
+
+{% endblock %}.w

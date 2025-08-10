@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from dotenv import load_dotenv
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 
+
 import os
 from datetime import datetime
 import traceback
@@ -115,8 +116,9 @@ def login():
 
 @app.route('/home')
 def home():
-    # Check if user is logged in
-    if 'email' not in session:
+
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('login'))
 
@@ -135,6 +137,37 @@ def home():
                            )
 
 
+
+@app.route('/delete_notification/<notification_id>')
+def delete_notification(notification_id):
+    # Check if user is logged in
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
+    # Restrict to admins
+    if session['user_type'] != 'admin':
+        flash('Only admins can delete notifications.', 'error')
+
+    notification_manager = Notifications()
+
+    # First deactivate the notification
+    if not notification_manager.deactivate_notification(notification_id):
+        flash('Failed to deactivate notification.', 'error')
+        print('Failed to deactivate notification')
+        return redirect(url_for('home'))
+
+    # Then delete all inactive notifications
+    if notification_manager.delete_notifications():
+        flash('Notification deleted successfully.', 'success')
+    else:
+        flash('Failed to delete notification.', 'error')
+
+    return redirect(url_for('home'))
+
+
+
+
 @app.route('/organisation_transactions', methods=['POST','GET'])
 def organisation_transactions():
 
@@ -150,6 +183,10 @@ def organisation_transactions():
 
 @app.route('/organisation_borrowers/<org_id>', methods=['GET', 'POST'])
 def organisation_borrowers(org_id):
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
     # Now you can use org_id to call your method
     loans_manager = Loans()
     organisations_manager = Organisations()
@@ -175,6 +212,11 @@ def organisation_borrowers(org_id):
 
 @app.route('/borrower_management')
 def borrower_management():
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
     organisation_manager = Organisations()
     organisations = organisation_manager.get_organisations()
     borrowers_manager = Borrowers()
@@ -188,6 +230,12 @@ def borrower_management():
 
 @app.route('/add_borrower', methods=['POST', 'GET'])
 def add_borrower():
+
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
     organisation_manager = Organisations()
     organisations = organisation_manager.get_organisations()
     borrowers_manager = Borrowers()
@@ -281,6 +329,12 @@ def get_borrower_data(borrower_id):
 @app.route('/update_borrower', methods=['POST'])
 def update_borrower():
     """Handle borrower update requests"""
+
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
     borrowers_manager = Borrowers()
 
     try:
@@ -354,21 +408,45 @@ def update_borrower():
         }), 500
 
 
-@app.route('/loan_information/<loan_id>', methods=['POST','GET'])
+@app.route('/loan_information/<loan_id>', methods=['POST', 'GET'])
 def loan_information(loan_id):
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
 
     loan_manager = Loans()
+    notification_manager = Notifications()
+
+    # Get basic borrower and loan info
     borrower = loan_manager.get_borrower_by_loan(loan_id)
     loan = loan_manager.get_loan_info_by_id(loan_id)
 
+    # Get loan files - assuming loan object contains loan_request_id
+    loan_files = None
+    if loan and loan.get('loan_request_id'):
+        loan_files = notification_manager.get_loan_files_by_loan_request_id(loan.get('loan_request_id'))
+
+    # get loan summary dataframe
+    loan_summary_df = loan_manager.get_repayment_summary(loan_id)
+
+    # Convert DataFrame to list of dicts for Jinja2
+    loan_summary = loan_summary_df.to_dict(orient="records")
+
     return render_template('loan_information.html',
-                           borrower = borrower,
-                           loan = loan
-                           )
+                           borrower=borrower,
+                           loan=loan,
+                           loan_files=loan_files,
+                           loan_summary = loan_summary)
 
 
 @app.route('/loan_application', methods=['POST','GET'])
 def loan_application():
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
     organisation_manager = Organisations()
     organisations = organisation_manager.get_organisations()
 
@@ -378,6 +456,12 @@ def loan_application():
 
 @app.route('/loan_application_summary', methods=['POST', 'GET'])
 def loan_application_summary():
+
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
     loan_manager = Loans()
     organisation_manager = Organisations()
 
@@ -445,9 +529,10 @@ def loan_application_summary():
 
 @app.route('/loan_request', methods=['POST'])
 def create_loan_request():
+
     try:
-        # Check if user is logged in
-        if 'email' not in session:
+        # Check if user is logged in and has a user type
+        if 'email' not in session or 'user_type' not in session:
             flash('Please log in to access this page.', 'error')
             return redirect(url_for('login'))
 
@@ -622,6 +707,11 @@ def create_loan_request():
 # You'll also need a success route
 @app.route('/loan_success')
 def loan_success():
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
     """Display loan request success page"""
 
     return render_template('loan_success.html',
@@ -631,6 +721,12 @@ def loan_success():
 @app.route('/loan_approvals')
 @app.route('/loan_approvals/<status>')
 def loan_approvals(status='pending'):
+
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
     notification_manager = Notifications()
     information = notification_manager.exhausted_loan_request_data(status)
 
@@ -641,6 +737,11 @@ def loan_approvals(status='pending'):
 
 @app.route('/loan_request_information/<loan_id>/<status>', methods=['POST', 'GET'])
 def loan_request_information(loan_id, status):
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
     notifications_manager = Notifications()
 
     # Get loans with the specific status
@@ -686,19 +787,30 @@ def loan_request_information(loan_id, status):
 
 @app.route('/reject_loan/<loan_id>', methods=['GET', 'POST'])
 def reject_loan(loan_id):
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
+    user_type = session['user_type']
+
+    if user_type != 'admin':
+        flash('Only admins can approve loans')
+        return redirect(url_for('loan_request_information'))
+
     try:
-        print(f"Attempting to reject loan ID: {loan_id}")  # Debug log
-        print(f"Request method: {request.method}")  # Debug log
+            print(f"Attempting to reject loan ID: {loan_id}")  # Debug log
+            print(f"Request method: {request.method}")  # Debug log
 
-        notification_manager = Notifications()
-        result = notification_manager.reject_loan_request(loan_id)
+            notification_manager = Notifications()
+            result = notification_manager.reject_loan_request(loan_id)
 
-        print(f"Rejection result: {result}")  # Debug log
+            print(f"Rejection result: {result}")  # Debug log
 
-        if result:
-            return jsonify({'success': True, 'message': 'Loan rejected successfully'})
-        else:
-            return jsonify({'success': False, 'message': 'Failed to reject loan'})
+            if result:
+                return jsonify({'success': True, 'message': 'Loan rejected successfully'})
+            else:
+                return jsonify({'success': False, 'message': 'Failed to reject loan'})
     except Exception as e:
         print(f'Exception in reject_loan route: {e}')  # Debug log
         return jsonify({'success': False, 'message': str(e)}), 500
@@ -707,6 +819,18 @@ def reject_loan(loan_id):
 
 @app.route('/approve_loan/<loan_id>', methods=['GET', 'POST'])
 def approve_loan(loan_id):
+
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
+    user_type = session['user_type']
+
+    if user_type != 'admin':
+        flash('Only admins can approve loans')
+        return redirect(url_for('loan_request_information'))
+
     try:
         print(f"Attempting to approve loan ID: {loan_id}")  # Debug log
         print(f"Request method: {request.method}")  # Debug log
@@ -737,6 +861,18 @@ def approval_success():
 
 @app.route('/wallet', methods=['POST','GET'])
 def wallet():
+
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
+    user_type = session['user_type']
+
+    if user_type != 'admin':
+        flash('Only admins can approve loans')
+        return redirect(url_for('loan_request_information'))
+
     wallet_manager = Wallet()
 
     wallet_transactions = wallet_manager.load_transactions()
@@ -749,6 +885,17 @@ def wallet():
 
 @app.route('/withdraw', methods=['POST', 'GET'])
 def withdraw():
+
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+    user_type = session['user_type']
+
+    if user_type != 'admin':
+        flash('Only admins can approve loans')
+        return redirect(url_for('loan_request_information'))
+
     wallet_manager = Wallet()
     wallet_transactions = wallet_manager.load_transactions()
     wallet_balance = wallet_manager.wallet_balance()
@@ -762,6 +909,17 @@ def withdraw():
 
 @app.route('/cash_out', methods=['POST'])
 def cash_out():
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
+    user_type = session['user_type']
+
+    if user_type != 'admin':
+        flash('Only admins can approve loans')
+        return redirect(url_for('loan_request_information'))
+
     amount = request.form['amount']
     bank_name = request.form['bank_name']
     account_number = request.form['account_number']
@@ -782,6 +940,17 @@ def cash_out():
 
 @app.route('/account_info_settings', methods=['POST', 'GET'])
 def account_info_settings():
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
+    user_type = session['user_type']
+
+    if user_type != 'admin':
+        flash('Only admins can approve loans')
+        return redirect(url_for('loan_request_information'))
+
     settings_manager = Settings()
 
     if request.method == 'POST':
@@ -819,6 +988,16 @@ def account_info_settings():
 
 @app.route('/user_settings', methods=['POST','GET'])
 def user_settings():
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
+    user_type = session['user_type']
+
+    if user_type != 'admin':
+        flash('Only admins can approve loans')
+        return redirect(url_for('loan_request_information'))
 
     settings_manager = Settings()
     users = settings_manager.load_users()
@@ -828,6 +1007,17 @@ def user_settings():
 
 @app.route('/add_user', methods=['POST', 'GET'])
 def add_user():
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
+    user_type = session['user_type']
+
+    if user_type != 'admin':
+        flash('Only admins can approve loans')
+        return redirect(url_for('loan_request_information'))
+
     if request.method == 'POST':
         # Get the entire form data as a dictionary
         form_data = request.form.to_dict()
@@ -853,6 +1043,17 @@ def add_user():
 
 @app.route('/partner_settings', methods=['GET'])  # Only GET for this route
 def partner_settings():
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
+    user_type = session['user_type']
+
+    if user_type != 'admin':
+        flash('Only admins can approve loans')
+        return redirect(url_for('loan_request_information'))
+
     settings_manager = Settings()
     partners = settings_manager.load_partners()
     return render_template('partners_settings.html', partners=partners)
@@ -860,6 +1061,18 @@ def partner_settings():
 
 @app.route('/update_partner', methods=['POST'])
 def update_partner():
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
+
+    user_type = session['user_type']
+
+    if user_type != 'admin':
+        flash('Only admins can approve loans')
+        return redirect(url_for('loan_request_information'))
+
     settings_manager = Settings()
 
     # Get form data
@@ -877,6 +1090,18 @@ def update_partner():
 
 @app.route('/add_partner', methods=['POST'])
 def add_partner():
+    # Check if user is logged in and has a user type
+    if 'email' not in session or 'user_type' not in session:
+        flash('Please log in to access this page.', 'error')
+        return redirect(url_for('login'))
+
+    user_type = session['user_type']
+
+    if user_type != 'admin':
+        flash('Only admins can approve loans')
+        return redirect(url_for('loan_request_information'))
+
+
     settings_manager = Settings()
 
     # Get the entire form data as a dictionary
@@ -892,6 +1117,8 @@ def add_partner():
 
     # Redirect instead of rendering template
     return redirect(url_for('partner_settings'))
+
+
 
 
 

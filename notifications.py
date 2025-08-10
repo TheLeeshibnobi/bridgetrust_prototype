@@ -109,12 +109,50 @@ class Notifications:
                 self.supabase
                 .table('notifications')
                 .select('*')
+                .eq('status', 'active')
                 .execute()
             )
             return response.data
         except Exception as e:
             print(f'Exception while loading loan requests: {e}')
         return None
+
+    def deactivate_notification(self, notification_id):
+        """changes a notification status"""
+        try:
+            response = (
+                self.supabase
+                .table('notifications')
+                .update({'status' : 'inactive'})
+                .eq('id', notification_id)
+                .execute()
+            )
+            return response.data
+        except Exception as e:
+            print(f'Exception while loading loan requests: {e}')
+        return None
+
+    def delete_notifications(self):
+        """Deletes notifications that are not active"""
+        try:
+            response = (
+                self.supabase
+                .table('notifications')
+                .delete()
+                .eq('status', 'inactive')
+                .execute()
+            )
+
+            # Optional: check if anything was deleted
+            if response.data:
+                print(f"Deleted {len(response.data)} inactive notifications.")
+            else:
+                print("No inactive notifications found.")
+
+            return response
+        except Exception as e:
+            print(f'Exception while deleting notifications: {e}')
+            return None
 
     def exhausted_loan_request_data(self, status):
         """
@@ -301,6 +339,33 @@ class Notifications:
             print(f'[EXCEPTION] {e}')
             return None
 
+    def get_loan_files_by_loan_request_id(self, loan_request_id):
+        """Get loan files for a specific loan request"""
+        try:
+            response = (
+                self.supabase
+                .table('loan_requests')
+                .select('loan_file_id')
+                .eq('id', loan_request_id)
+                .single()
+                .execute()
+            )
 
+            loan_file_id = response.data.get('loan_file_id') if response.data else None
 
+            if loan_file_id:
+                loan_files_response = (
+                    self.supabase
+                    .table('loan_files')
+                    .select('*')
+                    .eq('id', loan_file_id)
+                    .single()
+                    .execute()
+                )
+                return loan_files_response.data
+
+            return {}
+        except Exception as e:
+            print(f'Exception while getting loan files: {e}')
+            return {}
 

@@ -33,21 +33,39 @@ class Loans:
     def organisation_summary(self):
         """Returns summary of total loan and repayment stats grouped by organisation."""
         try:
-            # Step 1: Get all loans
-            loan_response = self.supabase.table('loans').select('id, organisation_id').execute()
+            # Step 1: Get all loans with complete info
+            loan_response = self.supabase.table('loans').select(
+                'id, organisation_id, loan_amount, interest_rate, term_months'
+            ).execute()
+
             if loan_response.data is None:
                 return []
 
             loans = loan_response.data
 
-            # Step 2: Map loan_id to organisation_id
+            # Step 2: Map loan_id to organisation_id and calculate initial loan values
             loan_to_org = {}
             org_loan_count = {}
+            loan_initial_data = {}
+
             for loan in loans:
                 loan_id = loan['id']
                 org_id = loan['organisation_id']
+                loan_amount = loan['loan_amount']
+                interest_rate = loan['interest_rate']
+
                 loan_to_org[loan_id] = org_id
                 org_loan_count[org_id] = org_loan_count.get(org_id, 0) + 1
+
+                # Calculate initial values (before any repayments)
+                total_interest = loan_amount * interest_rate
+                total_amount = loan_amount + total_interest
+
+                loan_initial_data[loan_id] = {
+                    'principal_component': loan_amount,
+                    'interest_component': total_interest,
+                    'balance': total_amount
+                }
 
             # Step 3: Get unique organisation_ids
             organisation_ids = list(org_loan_count.keys())
@@ -62,17 +80,26 @@ class Loans:
             )
             org_map = {org['id']: org['name'] for org in org_response.data}
 
-            # Step 5: Fetch all repayments
+            # Step 5: Fetch all repayments and get the most recent for each loan
             loan_ids = list(loan_to_org.keys())
             repayment_response = (
                 self.supabase
                 .table('loan_repayments')
-                .select('loan_id, principal_component, interest_component, balance')
+                .select('loan_id, principal_component, interest_component, balance, created_at')
                 .in_('loan_id', loan_ids)
+                .order('created_at', desc=True)  # Most recent first
                 .execute()
             )
 
-            # Step 6: Aggregate by organisation
+            # Step 6: Get the most recent repayment for each loan
+            latest_repayments = {}
+            if repayment_response.data:
+                for repayment in repayment_response.data:
+                    loan_id = repayment['loan_id']
+                    if loan_id not in latest_repayments:
+                        latest_repayments[loan_id] = repayment
+
+            # Step 7: Aggregate by organisation
             from collections import defaultdict
             org_summary = defaultdict(lambda: {
                 'total_principal_component': 0,
@@ -83,28 +110,40 @@ class Loans:
                 'organisation_name': ''
             })
 
-            for repayment in repayment_response.data:
-                loan_id = repayment['loan_id']
-                org_id = loan_to_org.get(loan_id)
+            # Initialize and populate organisation data
+            for org_id in organisation_ids:
+                org_summary[org_id]['organisation_id'] = org_id
+                org_summary[org_id]['organisation_name'] = org_map.get(org_id, 'Unknown')
+                org_summary[org_id]['total_loans'] = org_loan_count[org_id]
 
-                if not org_id:
-                    continue
-
+            # Process each loan
+            for loan_id, org_id in loan_to_org.items():
                 org_entry = org_summary[org_id]
-                org_entry['organisation_id'] = org_id
-                org_entry['organisation_name'] = org_map.get(org_id, 'Unknown')
-                org_entry['total_principal_component'] += repayment['principal_component']
-                org_entry['total_interest_component'] += repayment['interest_component']
-                org_entry['total_balance'] += repayment['balance']
 
-            # Step 7: Add loan count to each org summary
-            for org_id, count in org_loan_count.items():
-                org_summary[org_id]['total_loans'] = count
+                # Use repayment data if available, otherwise use initial loan data
+                if loan_id in latest_repayments:
+                    # Use most recent repayment data
+                    repayment = latest_repayments[loan_id]
+                    principal = repayment['principal_component'] or 0
+                    interest = repayment['interest_component'] or 0
+                    balance = repayment['balance'] or 0
+                else:
+                    # Use initial loan data (no repayments made yet)
+                    initial = loan_initial_data[loan_id]
+                    principal = initial['principal_component']
+                    interest = initial['interest_component']
+                    balance = initial['balance']
+
+                org_entry['total_principal_component'] += principal
+                org_entry['total_interest_component'] += interest
+                org_entry['total_balance'] += balance
 
             return list(org_summary.values())
 
         except Exception as e:
             print(f'Exception: {e}')
+            import traceback
+            traceback.print_exc()
             return []
 
     def organisation_revenue_and_balance(self, organisational_id=None):
@@ -1240,3 +1279,110 @@ class Loans:
         except Exception as e:
             print(f'Exception: {e}')
             return None
+
+
+
+    def get_repayment_summary(self, loan_id):
+        """Returns the full amortization or simple-interest schedule for a loan."""
+
+        # Get the loan details
+        loan_response = (
+            self.supabase
+            .table('loans')
+            .select('*')
+            .eq('id', loan_id)
+            .execute()
+        )
+        loan = loan_response.data[0]  # Supabase returns list
+
+        # Get loan type from loan_requests table
+        loan_request_response = (
+            self.supabase
+            .table('loan_requests')
+            .select('method')
+            .eq('id', loan['loan_request_id'])
+            .execute()
+        )
+        loan_type = loan_request_response.data[0]['method'].lower()  # 'simple' or 'amortization'
+
+        # Base repayment query for this loan
+        repayment_query = (
+            self.supabase
+            .table('loan_repayments')
+            .select('*')
+            .eq('loan_id', loan_id)
+        )
+
+        # Create empty DataFrame
+        columns = ["No", "Due Date", "Payment Due", "Interest", "Principal", "Balance", "Actual Paid", "Status"]
+        rows = []
+
+        # Loan constants
+        agreed_amount = float(loan['monthly_payment'])
+        original_balance = float(loan['loan_amount'])
+        annual_rate = float(loan['interest_rate']) / 100
+        monthly_rate = annual_rate / 12
+
+        # Start date
+        current_date = datetime.strptime(loan['start_date'], "%Y-%m-%d")
+        remaining_balance = original_balance
+
+        for number in range(1, loan['term_months'] + 1):
+            next_date = current_date + timedelta(days=30)
+
+            # Get repayments for this month
+            repayments_this_month = (
+                repayment_query
+                .gte('created_at', current_date.strftime("%Y-%m-%d"))
+                .lt('created_at', next_date.strftime("%Y-%m-%d"))
+                .execute()
+            )
+            payments_data = repayments_this_month.data
+            amount_paid_this_month = sum(float(r['payment_amount']) for r in payments_data)
+
+            # If repayment data exists for this month, use it for interest, principal, and balance
+            if payments_data:
+                latest_payment = sorted(payments_data, key=lambda x: x['payment_date'], reverse=True)[0]
+                interest = float(latest_payment['interest_amount'])
+                principal = float(latest_payment['principal_amount'])
+                balance = float(latest_payment['balance'])
+            else:
+                # Calculate interest/principal based on loan type
+                if loan_type == "simple":
+                    interest = original_balance * monthly_rate
+                    principal = agreed_amount - interest
+                elif loan_type == "amortization":
+                    interest = remaining_balance * monthly_rate
+                    principal = agreed_amount - interest
+                else:
+                    interest = 0
+                    principal = agreed_amount
+
+                # Update balance
+                balance = max(0, remaining_balance - principal)
+
+            payment_due = agreed_amount - amount_paid_this_month
+            status = "Paid" if payment_due <= 0 else "Pending"
+
+            rows.append((
+                number,
+                next_date.strftime("%Y-%m-%d"),
+                round(payment_due, 2),
+                round(interest, 2),
+                round(principal, 2),
+                round(balance, 2),
+                round(amount_paid_this_month, 2),
+                status
+            ))
+
+            # Prepare for next loop
+            current_date = next_date
+            remaining_balance = balance
+
+        # Create DataFrame
+        loan_df = pd.DataFrame(rows, columns=columns)
+        return loan_df
+
+
+test = Loans()
+print(test.get_repayment_summary('54317b45-edcd-4796-aaa2-a99f7e1efccb'))

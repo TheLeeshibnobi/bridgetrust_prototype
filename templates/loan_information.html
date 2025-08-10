@@ -342,54 +342,108 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for row in loan_summary %}
                     <tr>
-                        <td>1</td>
-                        <td>30/05/2025</td>
-                        <td>1053.25</td>
-                        <td>315.975</td>
-                        <td>737.275</td>
-                        <td>5100</td>
-                        <td>1053.25</td>
-                        <td><span class="status-paid">Paid</span></td>
+                        <td>{{ row['No'] }}</td>
+                        <td>{{ row['Due Date'] }}</td>
+                        <td>{{ row['Payment Due'] }}</td>
+                        <td>{{ row['Interest'] }}</td>
+                        <td>{{ row['Principal'] }}</td>
+                        <td>{{ row['Balance'] }}</td>
+                        <td>{{ row['Actual Paid'] }}</td>
+                        <td>
+                            {% if row['Status'] == 'Paid' %}
+                                <span class="status-paid">Paid</span>
+                            {% else %}
+                                <span class="status-pending">Pending</span>
+                            {% endif %}
+                        </td>
                     </tr>
+                    {% endfor %}
                 </tbody>
+
             </table>
         </div>
     </div>
 </div>
 
 <script>
+    // Store loan files URLs for JavaScript access
+    const loanFiles = {
+        loan_agreement: "{{ loan_files.get('loan_agreement', '') if loan_files else '' }}",
+        payment_schedule: "{{ loan_files.get('payment_schedule', '') if loan_files else '' }}"
+    };
+
     function viewDocument(docType) {
-        alert(`Opening ${docType.replace('-', ' ')} document...`);
-        console.log(`Viewing document: ${docType}`);
+        let url = '';
+
+        switch(docType) {
+            case 'loan-agreement':
+                url = loanFiles.loan_agreement;
+                if (url) {
+                    window.open(url, '_blank');
+                } else {
+                    alert('Loan agreement document not found');
+                }
+                break;
+
+            case 'amortization':
+                url = loanFiles.payment_schedule;
+                if (url) {
+                    window.open(url, '_blank');
+                } else {
+                    alert('Payment schedule document not found');
+                }
+                break;
+
+            case 'proof-identity':
+                alert('Proof of identity document feature coming soon...');
+                break;
+
+            default:
+                alert(`Opening ${docType.replace('-', ' ')} document...`);
+        }
+
+        console.log(`Viewing document: ${docType}, URL: ${url}`);
     }
 
     function exportSchedule() {
-        const table = document.querySelector('table');
-        let csvContent = '';
-        const rows = table.querySelectorAll('tr');
+        // First try to download the payment schedule file directly
+        if (loanFiles.payment_schedule) {
+            const a = document.createElement('a');
+            a.href = loanFiles.payment_schedule;
+            a.download = 'payment_schedule.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } else {
+            // Fallback to generating CSV from table
+            const table = document.querySelector('table');
+            let csvContent = '';
+            const rows = table.querySelectorAll('tr');
 
-        rows.forEach(row => {
-            const cols = row.querySelectorAll('th, td');
-            const rowData = Array.from(cols).map(col => {
-                let text = col.textContent.trim();
-                if (col.querySelector('.status-paid')) {
-                    text = col.querySelector('.status-paid').textContent;
-                }
-                return `"${text}"`;
-            }).join(',');
-            csvContent += rowData + '\n';
-        });
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('th, td');
+                const rowData = Array.from(cols).map(col => {
+                    let text = col.textContent.trim();
+                    if (col.querySelector('.status-paid')) {
+                        text = col.querySelector('.status-paid').textContent;
+                    }
+                    return `"${text}"`;
+                }).join(',');
+                csvContent += rowData + '\n';
+            });
 
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'amortization_schedule.csv';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'amortization_schedule.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
     }
 </script>
 
