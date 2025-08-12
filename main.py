@@ -127,22 +127,17 @@ def home():
     home_manager = Home()
     notification_manager = Notifications()
     total_principal_given = home_manager.total_principal_given()
-    interest_earned = home_manager.interest_earned()
-    total_receivables = home_manager.total_receivables()
     notifications = notification_manager.load_notifications()
     interest_per_quarter = home_manager.interest_per_quarter(selected_year)
     nominal_rate = home_manager.get_nominal_rate()
     outstanding_principal_balance = home_manager.total_loan_disbursed() - home_manager.total_principal_repaid()
+    interest_earned = home_manager.interest_earned()
 
-    # calaculate expected interest
-    df = home_manager.get_repayment_summary_all()
-    total_expected_interest = df['Interest'].sum()
+    expected_interest = home_manager.expected_interest()
+    total_receivables = home_manager.total_receivables()
+    total_owed = outstanding_principal_balance + expected_interest
 
-    outstanding_interest = total_expected_interest - float(home_manager.total_interest_paid())
-    if outstanding_interest < 0:
-        outstanding_interest = 0  # just in case overpaid or rounding
 
-    total_owed = outstanding_principal_balance + outstanding_interest
 
     return render_template('home.html',
                            total_principal_given=total_principal_given,
@@ -152,7 +147,7 @@ def home():
                            notifications=notifications,
                            interest_per_quarter=interest_per_quarter,
                            outstanding_principal_balance  = outstanding_principal_balance,
-                           outstanding_interest = outstanding_interest,
+                           outstanding_interest = expected_interest,
                            total_owed = total_owed,
                            selected_year=selected_year)
 

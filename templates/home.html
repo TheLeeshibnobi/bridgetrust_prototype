@@ -802,8 +802,10 @@
     <div class="dashboard-header" style="display: flex; align-items: center; justify-content: space-between;">
         <h1 style="font-size: 24px; font-weight: 700; color: #003049;">Bridge Trust</h1>
         <div class="capital-display" style="font-size: 14px; text-align: right;">
+            <!--
             <p class="capital-amount" style="margin: 0; font-size: 18px;">K1,054,200.00</p>
             <p class="capital-label" style="margin: 0; font-size: 12px;">Available Capital</p>
+            -->
         </div>
     </div>
 
@@ -884,7 +886,7 @@
                 <div class="summary-header">
                     <h2 class="summary-title">Disbursed Capital Summary</h2>
                     <div class="growth-badge">
-                        <p class="growth-text">+{{nominal_rate}}% per month</p>
+                        <p class="growth-text">+{{ (nominal_rate * 100) | round(2) }}% per month</p>
                     </div>
                 </div>
 
@@ -905,7 +907,7 @@
                             <p class="summary-value">{{ interest_earned }}</p>
                         </div>
                         <div class="summary-row">
-                            <p class="summary-total-label">Total Receivable</p>
+                            <p class="summary-total-label">Account Receivables</p>
                             <p class="summary-total-value">{{ total_receivables }}</p>
                         </div>
                     </div>
